@@ -1,7 +1,15 @@
+"use client";
+
+import { useState } from "react";
+
 import Image from "next/image";
+import Link from "next/link";
+
+import Modal from "@/components/Modal";
 import styles from "./page.module.css";
 
 export default function Home() {
+  const [isModalOpen, setModalOpen] = useState(false);
   return (
     <>
       <div className={styles.wrapperImages}>
@@ -143,13 +151,34 @@ export default function Home() {
           <img src="./logo.svg" alt="Natural Pet Bakery" />
         </div>
         <nav className={styles.menu}>
-          <button className={styles.navButton}>Moj sadržaj</button>
-          <button className={styles.navButton}>Sav sadržaj</button>
-          <button className={styles.navButton}>
+          <Link className={styles.navButton} href="/my">
+            Moj sadržaj
+          </Link>
+          <Link className={styles.navButton} href="/all">
+            Sav sadržaj
+          </Link>
+          <button
+            className={styles.navButton}
+            onClick={() => setModalOpen(true)}
+          >
             + Dodaj fotografiju ili video
           </button>
         </nav>
       </div>
+      <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)}>
+        <h2>Dodaj fotografiju ili video</h2>
+        <input
+          type="file"
+          accept="image/*,video/*"
+          className={styles.fileInput}
+        />
+        <button
+          className={styles.uploadBtn}
+          onClick={() => setModalOpen(false)}
+        >
+          Upload
+        </button>
+      </Modal>
     </>
   );
 }
