@@ -16,9 +16,9 @@ export default function Modal({ isOpen, onClose, children }) {
         >
           <motion.div
             className={styles.modal}
-            initial={{ y: "100%", opacity: 0 }} // start from bottom
-            animate={{ y: 0, opacity: 1 }} // slide into place
-            exit={{ y: "100%", opacity: 0 }} // slide back down
+            initial={{ y: "100%", opacity: 0 }}   // start from bottom
+            animate={{ y: 0, opacity: 1 }}       // slide into place
+            exit={{ y: "100%", opacity: 0 }}     // slide back down
             transition={{ duration: 0.3, ease: "easeOut" }}
             onClick={(e) => e.stopPropagation()}
           >
