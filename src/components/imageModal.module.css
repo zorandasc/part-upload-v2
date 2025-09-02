@@ -1,0 +1,178 @@
+/* Modal overlay: Darker background for the theme */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.8); /* Darker overlay (increased opacity) */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  overflow: auto;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Modal content: Darker background for the theme */
+.modalContent {
+  position: relative;
+  width: 90vw;
+  height: 75vh;
+  max-width: 1200px;
+  max-height: 800px;
+  background-color: rgba(255, 255, 255, 0.35); 
+  backdrop-filter: blur(7.1px);
+  box-shadow: 5px 5px 20px rgba(180, 190, 200, 0.7); /* Darker shadow */
+  display: flex;
+  flex-direction: column; /* Stack imageInfo and image vertically */
+  gap: 5px; /* Space between imageInfo and image */
+  /*border: 1px solid rgba(255, 255, 255, 0.91);*/
+}
+
+/* Close button: Adjusted for darker theme */
+.closeButton {
+  position: absolute;
+  bottom: 10px;
+  right: 5px;
+  background: none;
+  border: none;
+  color: #3e3f41; /* Light gray for visibility on dark background */
+  font-size: 28px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  z-index: 100;
+  
+
+}
+
+.closeButton:hover {
+  color: tomato; /* Brighter red for hover effect */
+}
+
+/* Image info: Positioned above the image */
+.imageInfo {
+  background-color: rgba(255, 255, 255, 0.84); /* Darker semi-transparent background */
+  color: #2e3134; /* White text for contrast */
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  z-index: 10;
+  align-self: flex-start; /* Align to the left */
+  width: 100%; /* Full width for consistency */
+ /* position: absolute;*/
+}
+
+/* User text styling */
+.user {
+  font-size: 14px;
+  /*text-shadow: 1px 1px 1px black;*/
+  font-style: italic;
+  
+}
+
+.user em {
+  font-style: italic;
+}
+
+/* Image wrapper: Takes remaining space */
+.imageWrapper {
+  position: relative;
+  width: 100%;
+  height: calc(100% - 60px); /*CALCULATE RASPOLOZIV HIFG*/
+  flex-grow: 1; /*A ONDA UZMI SVE TO*/
+
+}
+
+/* Modal image: Fills the wrapper */
+.modalImage {
+  position: relative !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+/* Visually hidden for accessibility */
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+/* Fade-in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/*FOR DESKTOP BECAUSE OF MIN-WIDTH*/
+@media (min-width: 768px) {
+  .modalContent {
+    width: 90vw; /* Increased width for more image space */
+    max-width: 1200px; /* Larger max-width for bigger screens */
+    height: 90vh; /* Taller modal for maximum image height */
+    max-height: 1200px; /* Increased max-height */
+    padding: 20px; /* Reduced padding to give more space to image */
+    background-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 20px rgba(224, 218, 218, 0.6);
+    display: flex;
+    flex-direction: row;
+    gap: 1px; 
+    margin-top: 2rem;
+  }
+
+  .imageWrapper {
+    position: relative;
+    width: 100%;
+    height: auto; /* Reduced space for imageInfo */
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+   
+  }
+
+  .modalImage {
+    border-radius: 8px;
+    object-fit: contain; /* Preserve aspect ratio, no distortion */
+    max-width: 100%; /* Fill wrapper width if needed */
+    max-height: 100%; /* Fill wrapper height if needed */
+    width: 100% !important; /* Maximize width within wrapper */
+    height: 100% !important; /* Maximize height within wrapper */
+     /* Optional: subtle shadow */
+  }
+
+  .imageInfo {
+    
+    padding: 10px 15px; /* Reduced padding for compactness */
+    font-size: 16px;
+    background-color: rgba(255, 255, 255, 0.7);
+    align-self: flex-start;
+    width: auto; /* Hug content */
+    max-width: 100%;
+  }
+
+  .user {
+    font-size: 18px;
+  }
+
+  .closeButton {
+    position: absolute;
+    top: 15px; /* Adjusted for reduced padding */
+    right: 5px;
+    font-size: 32px;
+    color: whitesmoke;
+    margin-right: 0.5rem;
+  }
+}

@@ -1,3 +1,13 @@
 export default function My() {
-  return <div>MY</div>;
+  return (
+    <div>
+      <div>MOJ SADRZAJ</div>
+      <div>MOJ SADRZAJ</div>
+      <div>MOJ SADRZAJ</div>
+      <div>MOJ SADRZAJ</div>
+      <div>MOJ SADRZAJ</div>
+      <div>MOJ SADRZAJ</div>
+      <div>MOJ SADRZAJ</div>
+    </div>
+  );
 }

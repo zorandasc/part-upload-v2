@@ -1,0 +1,23 @@
+.spinnerContainer {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 999;
+}
+
+.spinner {
+  width: 70px;
+  height: 70px;
+  border: 10px solid #ccc;
+  border-top: 10px solid goldenrod;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  background-color: transparent;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,7 +1,14 @@
+.imagesWrapperContainer {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
 .wrapperImages {
   display: flex;
   flex-direction: column;
-  height: 150vh;
+  height: 100vh;
   justify-content: center;
   left: 50%;
   position: absolute;
@@ -9,7 +16,6 @@
   opacity: 0.6;
   transform: translate3d(-50%, -50%, 0) rotate(22.5deg);
   z-index: 0;
-  background-attachment: fixed;
 }
 .imagesLine {
   animation: runner 20s linear infinite;
@@ -65,18 +71,45 @@
   height: 100vh;
   z-index: 5;
   position: relative;
-  .logo {
-    margin: 0 auto;
-    margin-bottom: 10vw;
-    max-width: 300px;
-    width: 150px;
-    background: rgba(255, 255, 255, 0.3);
-    backdrop-filter: blur(10px);
-    border-radius: 100%;
-    img {
-      width: 100%;
-    }
+}
+
+.weddingcard {
+  margin: 0 auto;
+  margin-bottom: 10vw;
+  max-width: 500px;
+  width: 350px;
+  height: 200px;
+  background: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  background-image: url("/123.png");
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  img {
+    width: 100%;
   }
+}
+
+.names,
+.dates {
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 4px;
+  color: #6f6959;
+}
+.names {
+  font-size: 38px;
+
+  font-family: var(--font-great-vibes);
+}
+.dates {
+  font-size: 18px;
+  font-weight: 500;
 }
 .menu {
   display: flex;
@@ -86,16 +119,17 @@
   position: relative;
   .navButton {
     font-family: Raleway, serif;
-    color: #333;
+    color: #6f6959;
     cursor: pointer;
     font-size: 20px;
-    font-weight: 700;
+    font-weight: 500;
     line-height: 1;
     position: relative;
     text-align: center;
     margin: 1vh auto;
     padding: 2.5vh 0;
     width: 80%;
+    max-width: 300px;
     background: rgb(230 228 221 / 30%);
     backdrop-filter: blur(15px);
     border-radius: 5px;
@@ -127,3 +161,8 @@
   background: #0059c1;
 }
 
+.imagesContainer {
+  width: 100vw;
+
+  background: whitesmoke;
+}

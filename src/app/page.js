@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 
-import Image from "next/image";
 import Link from "next/link";
 
 import Modal from "@/components/Modal";
@@ -11,7 +10,7 @@ import styles from "./page.module.css";
 export default function Home() {
   const [isModalOpen, setModalOpen] = useState(false);
   return (
-    <>
+    <div className={styles.imagesWrapperContainer}>
       <div className={styles.wrapperImages}>
         <div className={styles.imagesLine}>
           <div
@@ -147,16 +146,18 @@ export default function Home() {
         </div>
       </div>
       <div className={styles.container}>
-        <div className={styles.logo}>
-          <img src="./logo.svg" alt="Natural Pet Bakery" />
+        <div className={styles.weddingcard}>
+          <p className={styles.names}>Gordana & Petar</p>
+          <p className={styles.dates}>11.08.1981</p>
         </div>
         <nav className={styles.menu}>
-          <Link className={styles.navButton} href="/my">
-            Moj sadržaj
-          </Link>
           <Link className={styles.navButton} href="/all">
-            Sav sadržaj
+            Galerija
           </Link>
+          <Link className={styles.navButton} href="/my">
+            Moja sviđanja
+          </Link>
+
           <button
             className={styles.navButton}
             onClick={() => setModalOpen(true)}
@@ -179,6 +180,6 @@ export default function Home() {
           Upload
         </button>
       </Modal>
-    </>
+    </div>
   );
 }

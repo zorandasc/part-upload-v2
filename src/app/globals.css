@@ -1,8 +1,13 @@
+:root {
+  --font-great-vibes: "Great Vibes", cursive;
+}
+
 html,
 body {
-  height: 100%;
-  overflow-x: hidden; /* prevents horizontal scroll */
-  overflow-y: hidden; /* keeps vertical scroll */
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow-x: hidden; /* prevent horizontal scroll */
 }
 
 body {
@@ -11,7 +16,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: #f7f7f7;
-  overflow-y: hidden;
+  overflow-y: auto;
 }
 
 * {

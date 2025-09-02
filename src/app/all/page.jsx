@@ -1,3 +1,5 @@
+import ImageGallery from "@/components/ImageGallery";
+
 export default function All() {
-  return <div>SVE</div>;
+  return <ImageGallery></ImageGallery>;
 }
