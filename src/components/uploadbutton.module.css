@@ -9,16 +9,16 @@
 }
 
 .menu1 {
-  padding: 15px;
+  padding: 10px;
   cursor: pointer;
   background: rgba(255, 255, 255, 0.67);
   color: #6f6959;
-  border-radius: 16px;
+  border-radius: 50%;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(7.1px);
   -webkit-backdrop-filter: blur(7.1px);
   border: 1px solid rgba(255, 255, 255, 0.91);
-  font-size: 30px;
+  font-size: 50px;
   display: flex;
   justify-content: center;
 }
