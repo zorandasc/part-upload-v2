@@ -9,8 +9,8 @@
 .spinner {
   width: 70px;
   height: 70px;
-  border: 10px solid #ccc;
-  border-top: 10px solid goldenrod;
+  border: 6px solid #ccc;
+  border-top: 6px solid goldenrod;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   background-color: transparent;

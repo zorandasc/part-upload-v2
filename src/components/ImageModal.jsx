@@ -3,6 +3,7 @@
 import styles from "./imageModal.module.css";
 import { useEffect, useRef } from "react";
 import Image from "next/image";
+import { FaTimes } from "react-icons/fa";
 
 export default function ImageModal({
   images,
@@ -88,7 +89,7 @@ export default function ImageModal({
           onClick={onClose}
           aria-label="Close modal"
         >
-          X
+          <FaTimes />
         </button>
       </div>
     </div>

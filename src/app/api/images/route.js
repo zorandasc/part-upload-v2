@@ -5,6 +5,7 @@ import clientPromise from "@/lib/mongodb";
 //ROUTA ZA DOBAVLJANJE  SVIH SLIKA
 //ROUTU POZIVA ImageGalery.jsx U HOME page
 export async function GET(req) {
+  
   try {
     const client = await clientPromise;
     const db = client.db("party");
@@ -15,7 +16,7 @@ export async function GET(req) {
       .find({})
       .sort({ uploadedAt: -1 })
       .toArray();
-
+      
     // Check if more images exist after this page
     const totalCount = await db.collection("images").countDocuments();
 
@@ -24,6 +25,7 @@ export async function GET(req) {
       { status: 200, headers: { "Content-Type": "application/json" } }
     );
   } catch (error) {
+    console.log(error)
     return NextResponse.json(
       { error: "Failed to fetch images" },
       { status: 500, headers: { "Content-Type": "application/json" } }

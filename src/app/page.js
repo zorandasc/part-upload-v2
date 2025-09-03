@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-
 import Link from "next/link";
-
 import Modal from "@/components/Modal";
 import styles from "./page.module.css";
+
 
 export default function Home() {
   const [isModalOpen, setModalOpen] = useState(false);
@@ -152,7 +151,7 @@ export default function Home() {
         </div>
         <nav className={styles.menu}>
           <Link className={styles.navButton} href="/all">
-            Galerija
+           Galerija
           </Link>
           <Link className={styles.navButton} href="/my">
             Moja sviđanja
