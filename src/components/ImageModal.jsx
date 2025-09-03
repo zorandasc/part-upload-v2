@@ -3,7 +3,7 @@
 import styles from "./imageModal.module.css";
 import { useEffect, useRef } from "react";
 import Image from "next/image";
-import { FaTimes } from "react-icons/fa";
+import { FaTimesCircle } from "react-icons/fa";
 
 export default function ImageModal({
   images,
@@ -76,21 +76,24 @@ export default function ImageModal({
             className={styles.modalImage}
           />
         </figure>
-        {imageInfo.userId && imageInfo.uploadedAt && (
-          <div className={styles.imageInfo}>
-            <span className={styles.user}>{imageInfo.userId}</span>
-            <span className={styles.user}>
-              {new Date(imageInfo.uploadedAt).toLocaleString()}
-            </span>
-          </div>
-        )}
-        <button
-          className={styles.closeButton}
-          onClick={onClose}
-          aria-label="Close modal"
-        >
-          <FaTimes />
-        </button>
+
+        <div className={styles.imageInfo}>
+          {imageInfo.userId && imageInfo.uploadedAt && (
+            <div className={styles.generalije}>
+              <span className={styles.user}>{imageInfo.userId}</span>
+              <span className={styles.user}>
+                {new Date(imageInfo.uploadedAt).toLocaleString()}
+              </span>
+            </div>
+          )}
+          <button
+            className={styles.closeButton}
+            onClick={onClose}
+            aria-label="Close modal"
+          >
+            <FaTimesCircle />
+          </button>
+        </div>
       </div>
     </div>
   );

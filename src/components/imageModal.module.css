@@ -21,7 +21,7 @@
   height: 75vh;
   max-width: 1200px;
   max-height: 800px;
-  background-color: rgba(255, 255, 255, 0.35); 
+  background-color: rgba(255, 255, 255, 0.35);
   backdrop-filter: blur(7.1px);
   box-shadow: 5px 5px 20px rgba(180, 190, 200, 0.7); /* Darker shadow */
   display: flex;
@@ -30,59 +30,51 @@
   /*border: 1px solid rgba(255, 255, 255, 0.91);*/
 }
 
-/* Close button: Adjusted for darker theme */
-.closeButton {
-  position: absolute;
-  bottom: 10px;
-  right: 5px;
-  background: none;
-  border: none;
-  color: #3e3f41; /* Light gray for visibility on dark background */
-  font-size: 28px;
-  cursor: pointer;
-  transition: color 0.2s ease;
-  z-index: 100;
-  
-
-}
-
-.closeButton:hover {
-  color: tomato; /* Brighter red for hover effect */
-}
-
-/* Image info: Positioned above the image */
 .imageInfo {
-  background-color: rgba(255, 255, 255, 0.84); /* Darker semi-transparent background */
-  color: #2e3134; /* White text for contrast */
-  padding: 10px 12px;
+  color: #47443d;
+  padding: 10px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  background: rgb(230 228 221 / 30%);
+  backdrop-filter: blur(15px);
+}
+
+.generalije{
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  z-index: 10;
-  align-self: flex-start; /* Align to the left */
-  width: 100%; /* Full width for consistency */
- /* position: absolute;*/
 }
 
-/* User text styling */
 .user {
   font-size: 14px;
-  /*text-shadow: 1px 1px 1px black;*/
   font-style: italic;
-  
 }
 
 .user em {
   font-style: italic;
 }
 
-/* Image wrapper: Takes remaining space */
+/* Close button: Adjusted for darker theme */
+.closeButton {
+  background: none;
+  border: none;
+  color: #6f6959;
+  font-size: 28px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  display: flex;
+}
+
+.closeButton:hover {
+  color: tomato; /* Brighter red for hover effect */
+}
+
 .imageWrapper {
   position: relative;
   width: 100%;
   height: calc(100% - 60px); /*CALCULATE RASPOLOZIV HIFG*/
   flex-grow: 1; /*A ONDA UZMI SVE TO*/
-
 }
 
 /* Modal image: Fills the wrapper */
@@ -128,7 +120,7 @@
     box-shadow: 0 8px 20px rgba(224, 218, 218, 0.6);
     display: flex;
     flex-direction: row;
-    gap: 1px; 
+    gap: 1px;
     margin-top: 2rem;
   }
 
@@ -140,7 +132,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-   
   }
 
   .modalImage {
@@ -150,11 +141,10 @@
     max-height: 100%; /* Fill wrapper height if needed */
     width: 100% !important; /* Maximize width within wrapper */
     height: 100% !important; /* Maximize height within wrapper */
-     /* Optional: subtle shadow */
+    /* Optional: subtle shadow */
   }
 
   .imageInfo {
-    
     padding: 10px 15px; /* Reduced padding for compactness */
     font-size: 16px;
     background-color: rgba(255, 255, 255, 0.7);
