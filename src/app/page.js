@@ -152,7 +152,7 @@ export default function Home() {
           <Link className={styles.navButton} href="/all">
             Galerija
           </Link>
-          <Link className={styles.navButton} href="/my">
+          <Link className={styles.navButton} href="/liked">
             Moja sviđanja
           </Link>
 

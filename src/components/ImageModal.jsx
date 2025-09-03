@@ -4,6 +4,9 @@ import styles from "./imageModal.module.css";
 import { useEffect, useRef } from "react";
 import Image from "next/image";
 import { FaTimesCircle } from "react-icons/fa";
+import { FaRegHeart } from "react-icons/fa";
+import { FaHeart } from "react-icons/fa";
+import { AiOutlineDownload } from "react-icons/ai";
 
 export default function ImageModal({
   images,
@@ -42,7 +45,7 @@ export default function ImageModal({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [currentIndex]);
 
-  //NEMA IZBARANE SLIKE
+  //NEMA IZABARANE SLIKE
   if (currentIndex === null || !images[currentIndex]) return null;
 
   //IZABRANA SLIKA
@@ -86,13 +89,29 @@ export default function ImageModal({
               </span>
             </div>
           )}
-          <button
-            className={styles.closeButton}
-            onClick={onClose}
-            aria-label="Close modal"
-          >
-            <FaTimesCircle />
-          </button>
+          <div className={styles.buttonsCotainer}>
+            <button
+              className={styles.closeButton}
+              onClick={onClose}
+              aria-label="Download Image"
+            >
+              <AiOutlineDownload />
+            </button>
+            <button
+              className={styles.closeButton}
+              onClick={onClose}
+              aria-label="Like Image"
+            >
+              <FaRegHeart />
+            </button>
+            <button
+              className={styles.closeButton}
+              onClick={onClose}
+              aria-label="Close modal"
+            >
+              <FaTimesCircle />
+            </button>
+          </div>
         </div>
       </div>
     </div>
