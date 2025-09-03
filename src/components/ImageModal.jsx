@@ -39,6 +39,18 @@ export default function ImageModal({
     }
   };
 
+  const handleLiked = () => {
+    // Get existing liked images or empty array
+    let likedImages = localStorage.getItem("likedImages");
+    likedImages = likedImages ? JSON.parse(likedImages) : [];
+
+    const imageInfo = images[currentIndex];
+
+    const updatedlikedImages = [...likedImages, imageInfo];
+
+    localStorage.setItem("likedImages", JSON.stringify(updatedlikedImages));
+  };
+
   //ATACH KEY LISTENER
   useEffect(() => {
     document.addEventListener("keydown", handleKeyDown);
@@ -99,7 +111,7 @@ export default function ImageModal({
             </button>
             <button
               className={styles.closeButton}
-              onClick={onClose}
+              onClick={handleLiked}
               aria-label="Like Image"
             >
               <FaRegHeart />

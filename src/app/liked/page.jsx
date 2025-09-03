@@ -9,15 +9,15 @@ export default function Liked() {
   const [isModalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
-    const storedImages = localStorage.getItem("uploadedImages");
+    const storedImages = localStorage.getItem("likedImages");
     if (storedImages) {
       setImages(JSON.parse(storedImages));
     }
   }, []);
 
   return (
-       <>
-      <ImageGallery></ImageGallery>
+    <>
+      <ImageGallery images={images}></ImageGallery>
       <UploadModal
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
