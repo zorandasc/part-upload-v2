@@ -1,0 +1,24 @@
+.container1 {
+  background: transparent;
+  position: fixed;
+  bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  
+}
+
+.menu1 {
+  padding: 15px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.67);
+  color: #6f6959;
+  border-radius: 16px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(7.1px);
+  -webkit-backdrop-filter: blur(7.1px);
+  border: 1px solid rgba(255, 255, 255, 0.91);
+  font-size: 30px;
+  display: flex;
+  justify-content: center;
+}

@@ -1,9 +1,9 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import styles from "./Modal.module.css";
+import styles from "./uploadModal.module.css";
 
-export default function Modal({ isOpen, onClose, children }) {
+export default function UploadModal({ isOpen, onClose }) {
   return (
     <AnimatePresence>
       {isOpen && (
@@ -22,7 +22,18 @@ export default function Modal({ isOpen, onClose, children }) {
             transition={{ duration: 0.3, ease: "easeOut" }}
             onClick={(e) => e.stopPropagation()}
           >
-            {children}
+              <h2>Dodaj fotografiju ili video</h2>
+        <input
+          type="file"
+          accept="image/*,video/*"
+          className={styles.fileInput}
+        />
+        <button
+          className={styles.uploadBtn}
+          onClick={() => setModalOpen(false)}
+        >
+          Upload
+        </button>
           </motion.div>
         </motion.div>
       )}

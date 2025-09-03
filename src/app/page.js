@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Modal from "@/components/Modal";
+import UploadModal from "@/components/UploadModal";
 import styles from "./page.module.css";
-
 
 export default function Home() {
   const [isModalOpen, setModalOpen] = useState(false);
@@ -151,7 +150,7 @@ export default function Home() {
         </div>
         <nav className={styles.menu}>
           <Link className={styles.navButton} href="/all">
-           Galerija
+            Galerija
           </Link>
           <Link className={styles.navButton} href="/my">
             Moja sviđanja
@@ -165,20 +164,10 @@ export default function Home() {
           </button>
         </nav>
       </div>
-      <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)}>
-        <h2>Dodaj fotografiju ili video</h2>
-        <input
-          type="file"
-          accept="image/*,video/*"
-          className={styles.fileInput}
-        />
-        <button
-          className={styles.uploadBtn}
-          onClick={() => setModalOpen(false)}
-        >
-          Upload
-        </button>
-      </Modal>
+      <UploadModal
+        isOpen={isModalOpen}
+        onClose={() => setModalOpen(false)}
+      ></UploadModal>
     </div>
   );
 }

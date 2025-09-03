@@ -19,3 +19,21 @@
   width: 90%;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
 }
+
+.fileInput {
+  margin: 1rem 0;
+}
+
+.uploadBtn {
+  background: #0070f3;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.uploadBtn:hover {
+  background: #0059c1;
+}
