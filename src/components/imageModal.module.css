@@ -37,7 +37,7 @@
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-background: rgb(230 228 221 / 0%);
+  background: rgb(230 228 221 / 0%);
   backdrop-filter: blur(10px);
 }
 
@@ -72,7 +72,7 @@ background: rgb(230 228 221 / 0%);
 }
 
 .closeButton:hover {
-  color: #ffdd82; 
+  color: #ffdd82;
 }
 
 .imageWrapper {
@@ -152,14 +152,21 @@ background: rgb(230 228 221 / 0%);
   .imageInfo {
     padding: 10px 15px; /* Reduced padding for compactness */
     font-size: 16px;
-    background-color: rgba(255, 255, 255, 0.7);
+    flex-direction: column;
   }
 
   .user {
     font-size: 18px;
   }
 
+  .buttonsCotainer {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+  }
+
   .closeButton {
     font-size: 32px;
+     margin-left: 0rem;
   }
 }
