@@ -84,7 +84,6 @@ export default function ImageModal({
   }, [currentIndex, imageInfo]);
 
   // 🛑 Guard AFTER hooks, in render
-  console.log(imageInfo);
   if (!imageInfo) return null;
 
   return (
@@ -135,7 +134,7 @@ export default function ImageModal({
               onClick={handleLiked}
               aria-label="Like Image"
             >
-              {isLiked ? <FaHeart color="darkgoldenrod" /> : <FaRegHeart />}
+              {isLiked ? <FaHeart  /> : <FaRegHeart />}
             </button>
             <button
               className={styles.closeButton}
