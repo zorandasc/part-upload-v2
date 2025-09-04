@@ -59,14 +59,13 @@ export default function ImageModal({
 
   const handleDownload = () => {
     const url = imageInfo.ufsUrl ? imageInfo.ufsUrl : imageInfo.url;
-    const fileName = url.split("/").pop(); // or use imageInfo._id + ".jpg"
-
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = fileName || "download.jpg";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const name = imageInfo.name || "download.jpg";
+    // Open API route to trigger server-side download
+    window.open(
+      `/api/download?url=${encodeURIComponent(url)}&name=${encodeURIComponent(
+        name
+      )}`
+    );
   };
 
   // Attach key listener
@@ -85,6 +84,7 @@ export default function ImageModal({
   }, [currentIndex, imageInfo]);
 
   // 🛑 Guard AFTER hooks, in render
+  console.log(imageInfo);
   if (!imageInfo) return null;
 
   return (
