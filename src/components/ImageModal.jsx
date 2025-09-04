@@ -1,11 +1,8 @@
 "use client";
-
 import styles from "./imageModal.module.css";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { FaTimesCircle } from "react-icons/fa";
-import { FaRegHeart } from "react-icons/fa";
-import { FaHeart } from "react-icons/fa";
+import { FaTimesCircle, FaRegHeart, FaHeart } from "react-icons/fa";
 import { AiOutlineDownload } from "react-icons/ai";
 
 export default function ImageModal({
@@ -14,7 +11,14 @@ export default function ImageModal({
   setCurrentIndex,
   onClose,
 }) {
+  const [isLiked, setIsLiked] = useState(false);
+  const [likedImages, setLikedImages] = useState([]);
   const touchStartX = useRef(null);
+
+  const imageInfo =
+    currentIndex !== null && images?.[currentIndex]
+      ? images[currentIndex]
+      : null;
 
   const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX;
@@ -40,28 +44,48 @@ export default function ImageModal({
   };
 
   const handleLiked = () => {
-    // Get existing liked images or empty array
-    let likedImages = localStorage.getItem("likedImages");
-    likedImages = likedImages ? JSON.parse(likedImages) : [];
+    if (!imageInfo) return;
 
-    const imageInfo = images[currentIndex];
-
-    const updatedlikedImages = [...likedImages, imageInfo];
-
-    localStorage.setItem("likedImages", JSON.stringify(updatedlikedImages));
+    let updated;
+    if (isLiked) {
+      updated = likedImages.filter((img) => img._id !== imageInfo._id);
+    } else {
+      updated = [...likedImages, imageInfo];
+    }
+    localStorage.setItem("likedImages", JSON.stringify(updated));
+    setLikedImages(updated);
+    setIsLiked(!isLiked);
   };
 
-  //ATACH KEY LISTENER
+  const handleDownload = () => {
+    const url = imageInfo.ufsUrl ? imageInfo.ufsUrl : imageInfo.url;
+    const fileName = url.split("/").pop(); // or use imageInfo._id + ".jpg"
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName || "download.jpg";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Attach key listener
   useEffect(() => {
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [currentIndex]);
 
-  //NEMA IZABARANE SLIKE
-  if (currentIndex === null || !images[currentIndex]) return null;
+  // Sync with localStorage whenever index changes
+  useEffect(() => {
+    if (!imageInfo) return;
+    const stored = localStorage.getItem("likedImages");
+    const liked = stored ? JSON.parse(stored) : [];
+    setLikedImages(liked);
+    setIsLiked(liked.some((img) => img._id === imageInfo._id));
+  }, [currentIndex, imageInfo]);
 
-  //IZABRANA SLIKA
-  const imageInfo = images[currentIndex];
+  // 🛑 Guard AFTER hooks, in render
+  if (!imageInfo) return null;
 
   return (
     <div
@@ -79,15 +103,12 @@ export default function ImageModal({
         </h2>
         <figure className={styles.imageWrapper}>
           <Image
-            //imageInfo.ufsUrl SE KORITI KOD UPLOAD, TO VRACA handleOnUploadComplete
-            //KOD ALLIMAGES, /homepage, VRACA SE imageInfo.url
             src={imageInfo.ufsUrl ? imageInfo.ufsUrl : imageInfo.url}
             alt={`Image uploaded by ${imageInfo.userId} on ${new Date(
               imageInfo.uploadedAt
             ).toLocaleString()}`}
             fill
             sizes="90vw"
-            //quality={80}
             className={styles.modalImage}
           />
         </figure>
@@ -104,8 +125,8 @@ export default function ImageModal({
           <div className={styles.buttonsCotainer}>
             <button
               className={styles.closeButton}
-              onClick={onClose}
               aria-label="Download Image"
+              onClick={handleDownload}
             >
               <AiOutlineDownload />
             </button>
@@ -114,7 +135,7 @@ export default function ImageModal({
               onClick={handleLiked}
               aria-label="Like Image"
             >
-              <FaRegHeart />
+              {isLiked ? <FaHeart color="darkgoldenrod" /> : <FaRegHeart />}
             </button>
             <button
               className={styles.closeButton}

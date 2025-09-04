@@ -23,7 +23,7 @@ export default function ImageGallery({ images }) {
                 priority
                 src={item.url}
                 alt="Image"
-                layout="fill"
+               fill
                 className={styles.image}
                 sizes="100%"
               />
