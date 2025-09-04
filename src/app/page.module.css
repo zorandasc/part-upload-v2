@@ -148,3 +148,11 @@
 
   background: whitesmoke;
 }
+
+
+/*FOR DESKTOP BECAUSE OF MIN-WIDTH*/
+@media (min-width: 768px) {
+  .weddingcard {
+     width: 500px;
+  }
+}
