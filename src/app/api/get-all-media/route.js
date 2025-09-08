@@ -7,7 +7,7 @@ export async function GET(req) {
     //second parameter is optional (base of the number),
     const page = parseInt(searchParams.get("page") || 1, 10);
     //Prevent someone from asking limit=999999 and crashing the DB:
-    const limit = Math.min(parseInt(searchParams.get("limit") || 20, 10));
+    const limit = Math.min(parseInt(searchParams.get("limit") || 20, 10), 100);
     const skip = (page - 1) * limit;
 
     const client = await clientPromise;

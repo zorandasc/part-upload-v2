@@ -49,6 +49,7 @@ export default function UploadModal({ isOpen, onClose }) {
     // Separate the key and values by a space, not an equal sign.
     //To join multiple key-value pairs, include a comma with no additional spaces.
     //Object.entries Returns an array of key/values
+    //https://developers.cloudflare.com/stream/uploading-videos/direct-creator-uploads/
     const metadata = Object.entries(metadataObj)
       .map(([k, v]) => `${k} ${btoa(v)}`)
       .join(",");

@@ -15,14 +15,14 @@ export default function MediaGallery({ allMedia, lastMediaRef }) {
     <>
       <section className={styles.uploadedImages}>
         {allMedia?.map((item, i) => {
-          const isLast = i === allMedia.length - 1; //determin last media file
+          const isLast = i === allMedia.length - 1; //determin last media file so we can attach observer
           return (
             <div
               key={i}
               className={styles.imageContainer}
               style={{ animationDelay: `${i * 0.1}s` }}
               onClick={() => setSelectedIndex(i)}
-              ref={isLast ? lastMediaRef : null} // observe last media file
+              ref={isLast ? lastMediaRef : null} // attach observer on last media file
             >
               {item.contentType === "video" ? (
                 <>

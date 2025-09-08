@@ -27,3 +27,34 @@ export const getVideoUrl = (mediaId) =>
 
 export const getVideoDownloadUrl = (mediaId) =>
   `https://videodelivery.net/${mediaId}/downloads/default.mp4`;
+
+/*CF Stream must download and encode the video, 
+    which can take a few seconds to a few minutes depending on the length of your video.
+    When the readyToStream value returns true, your video is ready for streaming. 
+    https://developers.cloudflare.com/stream/uploading-videos/upload-via-link/*/
+//POLL CF TO SEE IS VIDEO READY TO STREAM
+export const getCloudflareVideoStatus = async (mediaId) => {
+  const CF_ACCOUNT_ID = process.env.CF_ACCOUNT_ID;
+  const CF_STREAM_TOKEN = process.env.CF_STREAM_TOKEN;
+
+  const res = await fetch(
+    `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/stream/${mediaId}`,
+    {
+      headers: { Autgorization: `Bearer ${CF_STREAM_TOKEN}` },
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error(`Cloudflare API error: ${res.status}`);
+  }
+
+  const data = await res.json();
+
+  // Cloudflare wraps everything in data.result
+  return {
+    readyToStream: data.result.readyToStream,
+    status: data.result.status.state,
+    duration: data.result.duration,
+    size: data.result.size,
+  };
+};

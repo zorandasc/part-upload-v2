@@ -1,9 +1,6 @@
 import clientPromise from "@/lib/mongodb";
 import { NextResponse } from "next/server";
 
-const accountHash = process.env.CF_ACCOUNT_HASH;
-const customerSubdomain = process.env.CF_CUSTOMER_SUBDOMAIN;
-
 export async function POST(req) {
   try {
     const data = await req.json();
@@ -19,6 +16,11 @@ export async function POST(req) {
     const client = await clientPromise;
     const db = client.db("party");
 
+    /*CF Stream must download and encode the video, 
+    which can take a few seconds to a few minutes depending on the length of your video.
+    When the readyToStream value returns true, your video is ready for streaming. 
+    https://developers.cloudflare.com/stream/uploading-videos/upload-via-link/
+    */
     const mediaDoc = {
       mediaId: data.mediaId,
       name: data.name || null,
@@ -27,6 +29,7 @@ export async function POST(req) {
       createdAt: new Date(),
       userId: data.userId || null, // Add user context if available
       metadata: data.metadata || {},
+      readyToStream: data.contentType === "video" ? false : true, // images are always "ready"
     };
 
     const result = await db.collection("media").insertOne(mediaDoc);

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { FaTimesCircle, FaRegHeart, FaHeart } from "react-icons/fa";
 import { AiOutlineDownload } from "react-icons/ai";
+import { FaCogs } from "react-icons/fa";
 
 import { getImageUrl, getVideoUrl, getVideoDownloadUrl } from "@/lib/helper";
 
@@ -13,14 +14,14 @@ export default function MediaModal({
   setCurrentIndex,
   onClose,
 }) {
-  const [isLiked, setIsLiked] = useState(false);
-  const [likedMedia, setLikedMedia] = useState([]);
-  const touchStartX = useRef(null);
-
   const mediaInfo =
     currentIndex !== null && allMedia?.[currentIndex]
       ? allMedia[currentIndex]
       : null;
+
+  const [isLiked, setIsLiked] = useState(false);
+  const [likedMedia, setLikedMedia] = useState([]);
+  const touchStartX = useRef(null);
 
   const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX;
@@ -90,6 +91,7 @@ export default function MediaModal({
   }, [currentIndex]);
 
   // Sync with localStorage whenever index changes
+  //TO CHECK IF HART IS CHECKED / IS MEDIA LIKED
   useEffect(() => {
     if (!mediaInfo) return;
     const stored = localStorage.getItem("likedMedia");
@@ -99,6 +101,36 @@ export default function MediaModal({
     //ZA LIKED PRIKAZ OF CURRENT IMAGE
     setIsLiked(liked.some((img) => img._id === mediaInfo._id));
   }, [currentIndex, mediaInfo]);
+
+  //POLL EVERY 10S FOR VIDEO THAT IS NOT READY
+  //TO CHECK IF VIDEO IS READY TO STREAM
+
+  useEffect(() => {
+    // ✅ Skip if no mediaInfo yet
+    if (!mediaInfo) return;
+    //CHECK ONLY FOR VIDEO AND ONLY IF IT NOT READY
+    if (mediaInfo.contentType !== "video" || mediaInfo.readyToStream) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/media-state/${mediaInfo.mediaId}`);
+        if (res.ok) {
+          const updated = await res.json();
+          if (updated.readyToStream) {
+            // force re-render by reusing same index
+            setCurrentIndex((prev) => {
+              return prev;
+            });
+            clearInterval(interval);
+          }
+        }
+      } catch (err) {
+        console.error("Polling video status failed:", err);
+      }
+    }, 10000); //every 10s
+
+    return () => clearInterval(interval);
+  }, [currentIndex, mediaInfo, setCurrentIndex]);
 
   // 🛑 Guard AFTER hooks, in render
   if (!mediaInfo) return null;
@@ -119,12 +151,19 @@ export default function MediaModal({
         </h2>
         <figure className={styles.imageWrapper}>
           {mediaInfo.contentType === "video" ? (
-            <iframe
-              src={getVideoUrl(mediaInfo.mediaId)}
-              className={styles.modalVideo}
-              allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
-              allowFullScreen
-            ></iframe>
+            mediaInfo.readyToStream ? (
+              <iframe
+                src={getVideoUrl(mediaInfo.mediaId)}
+                className={styles.modalVideo}
+                allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                allowFullScreen
+              ></iframe>
+            ) : (
+              <div className={styles.videoPlaceholder}>
+                <FaCogs className={styles.spin} />
+                <span className={styles.pulse}>Video obrada u toku...</span>
+              </div>
+            )
           ) : (
             <Image
               src={getImageUrl(mediaInfo.mediaId, "public")}

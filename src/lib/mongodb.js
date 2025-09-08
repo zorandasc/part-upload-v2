@@ -7,6 +7,8 @@ const options = {};
 let client;
 let clientPromise;
 
+
+
 if (!global._mongoClientPromise) {
   //DEFINISI MONGODB CLEIENTA
   client = new MongoClient(uri, options);
