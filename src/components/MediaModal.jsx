@@ -19,8 +19,10 @@ export default function MediaModal({
       ? allMedia[currentIndex]
       : null;
 
+  //FOR SETTING LIKED HARTS
   const [isLiked, setIsLiked] = useState(false);
-  const [likedMedia, setLikedMedia] = useState([]);
+  //FOR UPLOADED VIDEO IN PROCESING
+  const [isReady, setIsReady] = useState(mediaInfo?.readyToStream || false);
   const touchStartX = useRef(null);
 
   const handleTouchStart = (e) => {
@@ -49,6 +51,9 @@ export default function MediaModal({
   const handleLiked = () => {
     if (!mediaInfo) return;
 
+    const stored = localStorage.getItem("likedMedia");
+    const likedMedia = stored ? JSON.parse(stored) : [];
+
     let updated;
     if (isLiked) {
       //AKO JE VEC LAJKOVAN IZBACI IZ LIKE
@@ -59,7 +64,7 @@ export default function MediaModal({
     }
     //ZAPAMTI PROMJENE
     localStorage.setItem("likedMedia", JSON.stringify(updated));
-    setLikedMedia(updated);
+    //setLikedMedia(updated);
     //TOGGLE PRIKAZ
     setIsLiked(!isLiked);
   };
@@ -91,14 +96,13 @@ export default function MediaModal({
   }, [currentIndex]);
 
   // Sync with localStorage whenever index changes
-  //TO CHECK IF HART IS CHECKED / IS MEDIA LIKED
+  //TO CHECK IF MEDIA IS LIKED (IN LOCALSTORAGE), SO THAT HART CAN BE
+  //VISUALY CHECKED
   useEffect(() => {
     if (!mediaInfo) return;
     const stored = localStorage.getItem("likedMedia");
     const liked = stored ? JSON.parse(stored) : [];
-    //GET ALL LIKED
-    setLikedMedia(liked);
-    //ZA LIKED PRIKAZ OF CURRENT IMAGE
+
     setIsLiked(liked.some((img) => img._id === mediaInfo._id));
   }, [currentIndex, mediaInfo]);
 
@@ -109,18 +113,19 @@ export default function MediaModal({
     // ✅ Skip if no mediaInfo yet
     if (!mediaInfo) return;
     //CHECK ONLY FOR VIDEO AND ONLY IF IT NOT READY
-    if (mediaInfo.contentType !== "video" || mediaInfo.readyToStream) return;
+    if (mediaInfo.contentType !== "video" || mediaInfo.readyToStream) {
+      setIsReady(true);
+      return;
+    }
 
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(`/api/media-state/${mediaInfo.mediaId}`);
+        const res = await fetch(`/api/media-state/${mediaInfo._id}`);
         if (res.ok) {
           const updated = await res.json();
+
           if (updated.readyToStream) {
-            // force re-render by reusing same index
-            setCurrentIndex((prev) => {
-              return prev;
-            });
+            setIsReady(true); // ✅ flip local flag
             clearInterval(interval);
           }
         }
@@ -151,7 +156,7 @@ export default function MediaModal({
         </h2>
         <figure className={styles.imageWrapper}>
           {mediaInfo.contentType === "video" ? (
-            mediaInfo.readyToStream ? (
+            isReady ? (
               <iframe
                 src={getVideoUrl(mediaInfo.mediaId)}
                 className={styles.modalVideo}

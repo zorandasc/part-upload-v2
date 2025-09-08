@@ -88,8 +88,10 @@ export default function All() {
     setModalOpen(false);
     setAllMedia([]);
     if (page === 1) {
+      //AKO SMO VEC NA PAGE 1 SAMO REFECTH ALL
       fetchAllMedia(); // re-fetch immediately
     } else {
+      //AKO NISMO VRATI SE NA POCETAK I PKAZI NOVI UNOS NA VRHU
       setPage(1); // triggers useEffect normally
     }
   };

@@ -89,7 +89,7 @@ export default function UploadModal({ isOpen, onClose }) {
           console.log("✅ Upload finished! UID:", uid);
 
           // 3. Save UID to DB
-          saveToDb(uid, "video");
+          await saveToDb(uid, "video");
 
           setUploading(false);
 
@@ -133,7 +133,7 @@ export default function UploadModal({ isOpen, onClose }) {
       console.log("✅ Image uploaded, ID:", id);
 
       // 3. Save UID to DB
-      saveToDb(id, "image");
+      await saveToDb(id, "image");
     } catch (err) {
       console.error("Upload error:", err);
     } finally {

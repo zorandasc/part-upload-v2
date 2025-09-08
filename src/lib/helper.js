@@ -40,7 +40,9 @@ export const getCloudflareVideoStatus = async (mediaId) => {
   const res = await fetch(
     `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/stream/${mediaId}`,
     {
-      headers: { Autgorization: `Bearer ${CF_STREAM_TOKEN}` },
+      headers: {
+        Authorization: `Bearer ${CF_STREAM_TOKEN}`,
+      },
     }
   );
 

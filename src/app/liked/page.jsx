@@ -1,15 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import MediaGallery from "@/components/MediaGallery";
-import UploadModal from "@/components/UploadModal";
 
 export default function Liked() {
   const [allMedia, setAllMedia] = useState([]);
-  const [isModalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const lastMediaRef = null
+  const lastMediaRef = null;
 
   useEffect(() => {
     const storedMedia = localStorage.getItem("likedMedia");
@@ -18,13 +16,5 @@ export default function Liked() {
     }
   }, []);
 
-  return (
-    <>
-      <MediaGallery allMedia={allMedia} lastMediaRef={lastMediaRef} />
-      <UploadModal
-        isOpen={isModalOpen}
-        onClose={() => setModalOpen(false)}
-      ></UploadModal>
-    </>
-  );
+  return <MediaGallery allMedia={allMedia} lastMediaRef={lastMediaRef} />;
 }
