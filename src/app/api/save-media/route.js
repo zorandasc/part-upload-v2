@@ -1,6 +1,9 @@
 import clientPromise from "@/lib/mongodb";
 import { NextResponse } from "next/server";
 
+const accountHash = process.env.CF_ACCOUNT_HASH;
+const customerSubdomain = process.env.CF_CUSTOMER_SUBDOMAIN;
+
 export async function POST(req) {
   try {
     const data = await req.json();
@@ -22,9 +25,8 @@ export async function POST(req) {
       mimeType: data.type || null,
       contentType: data.contentType, // "video" | "image"
       createdAt: new Date(),
-      // Add user context if available (e.g. from session/JWT)
-      userId: data.userId || null,
-      metadata: data.metadata || {}
+      userId: data.userId || null, // Add user context if available
+      metadata: data.metadata || {},
     };
 
     const result = await db.collection("media").insertOne(mediaDoc);

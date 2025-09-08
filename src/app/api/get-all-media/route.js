@@ -6,7 +6,8 @@ export async function GET(req) {
     const { searchParams } = new URL(req.url);
     //second parameter is optional (base of the number),
     const page = parseInt(searchParams.get("page") || 1, 10);
-    const limit = parseInt(searchParams.get("limit") || 20, 10);
+    //Prevent someone from asking limit=999999 and crashing the DB:
+    const limit = Math.min(parseInt(searchParams.get("limit") || 20, 10));
     const skip = (page - 1) * limit;
 
     const client = await clientPromise;
@@ -18,7 +19,7 @@ export async function GET(req) {
       .find({})
       .skip(skip)
       .limit(limit)
-      .sort({ uploadedAt: -1 })
+      .sort({ createdAt: -1 })
       .toArray();
 
     // Check if more item exist after this page

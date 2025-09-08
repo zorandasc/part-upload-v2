@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import ImageGallery from "@/components/ImageGallery";
+import MediaGallery from "@/components/MediaGallery";
 import UploadButton from "@/components/UploadButton";
 import UploadModal from "@/components/UploadModal";
 import Spinner from "@/components/Spinner";
 
 export default function All() {
-  const [images, setImages] = useState([]);
+  const [allMedia, setAllMedia] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -20,11 +20,11 @@ export default function All() {
   //useCallback memorize the function so it doesnot get recreated on every render
   //which is important because react will attach thi asa a ref to the last image
   //DEPENDENCIE [loadine, hasmore] will update function
-  const lastImageRef = useCallback(
+  const lastMediaRef = useCallback(
     (node) => {
-      //While images are currently being loaded, we don’t want to trigger another page load.
+      //While allMedia are currently being loaded, we don’t want to trigger another page load.
       //Stops the observer from being set up while a fetch is in progress.
-      if (loading) return;
+      if (loading || !hasMore) return;
       //observer.current stores the previous IntersectionObserver instance.
       //disconnect() removes it from the previously observed element.
       //This prevents multiple observers from stacking up, which can cause multiple page increments.
@@ -34,7 +34,7 @@ export default function All() {
       /*IntersectionObserver watches a DOM element and triggers a callback when it enters or leaves the viewport.
       entries[0] refers to the observed element (the last image).
       isIntersecting is true when the element is visible on screen.
-      If it’s visible and there are more images (hasMore), we increment page to fetch the next set of images.*/
+      If it’s visible and there are more allMedia (hasMore), we increment page to fetch the next set of allMedia.*/
       observer.current = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting && hasMore) {
           setPage((prev) => prev + 1);
@@ -51,31 +51,63 @@ export default function All() {
   );
 
   useEffect(() => {
-    const fetchImages = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/images?page=${page}&limit=20`);
-        const data = await res.json();
-
-        setImages((prev) => [...prev, ...data.files]);
-        setTotalCount(data.totalCount);
-        setHasMore(data.hasMore);
-      } catch (error) {
-        console.error("Fetch error:", error);
-      } finally {
-        setLoading(false);
-      }
+    return () => {
+      if (observer.current) observer.current.disconnect();
     };
+  }, []);
 
-    fetchImages();
+  //to stabilize it and avoid unnecessary effect triggers:
+  const fetchAllMedia = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/get-all-media?page=${page}&limit=20`);
+      const data = await res.json();
+
+      setAllMedia((prev) =>
+        page === 1 ? data.files : [...prev, ...data.files]
+      );
+      setTotalCount(data.totalCount);
+      setHasMore(data.hasMore);
+    } catch (error) {
+      console.error("Fetch error:", error);
+    } finally {
+      setLoading(false);
+    }
   }, [page]);
+
+  useEffect(() => {
+    fetchAllMedia();
+  }, [fetchAllMedia]);
+
+  useEffect(() => {
+    if (page === 1) window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [allMedia]);
+
+  // Handler called when UploadModal is closed after upload
+  const handleModalClose = () => {
+    setModalOpen(false);
+    setAllMedia([]);
+    if (page === 1) {
+      fetchAllMedia(); // re-fetch immediately
+    } else {
+      setPage(1); // triggers useEffect normally
+    }
+  };
 
   return (
     <>
-      <ImageGallery images={images} lastImageRef={lastImageRef} />
+      {!loading && allMedia.length === 0 && (
+        <p style={{ textAlign: "center", color: "gray" }}>
+          No media uploaded yet.
+        </p>
+      )}
+      <MediaGallery allMedia={allMedia} lastMediaRef={lastMediaRef} />
       {loading && <Spinner />}
       <UploadButton handleClick={() => setModalOpen(true)} />
-      <UploadModal isOpen={isModalOpen} onClose={() => setModalOpen(false)} />
+      <UploadModal
+        isOpen={isModalOpen}
+        onClose={handleModalClose} // Auto-refresh gallery
+      />
     </>
   );
 }
