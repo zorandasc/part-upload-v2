@@ -147,27 +147,17 @@
     opacity: 1;
   }
 }
-
-.arrowContainer {
-  padding: 10px;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  background: transparent;
-  backdrop-filter: blur(1px);
+ 
+.leftArrow,
+.rightArrow {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  justify-content: space-between;
-  width: 100%;
-}
-
-.leftArrow,
-.rightArrow {
+  width: 50px;
+  height: 50px;
   background: rgba(72, 72, 71, 0.4);
   backdrop-filter: blur(10px);
-  padding: 8px;
+  padding: 10px;
   font-size: 30px;
   display: flex;
   color: #ffdd82;
@@ -175,11 +165,35 @@
   z-index: 9999; /* force arrows above iframe */
   pointer-events: auto; /* ensures click is captured */
 }
+
 .leftArrow {
-  left: 10px;
+  left: 0;
 }
 .rightArrow {
-  right: 10px;
+  right: 0;
+}
+
+.rightArrow[disabled] {
+  color: whitesmoke;
+}
+
+.leftArrow[disabled] {
+  color: whitesmoke;
+}
+
+.tooltip {
+  position: absolute;
+  top: 30%;
+  right: 30px; /* adjust based on your arrow button */
+  transform: translateY(-50%);
+  background: rgba(28, 28, 27, 0.5);
+  backdrop-filter: blur(10px);
+  color: #ffdd82;
+  font-size: 16px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  z-index: 3000;
 }
 
 /* Visually hidden for accessibility */

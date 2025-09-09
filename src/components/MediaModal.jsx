@@ -25,6 +25,9 @@ export default function MediaModal({
   const [isLiked, setIsLiked] = useState(false);
   //FOR UPLOADED VIDEO IN PROCESING
   const [isReady, setIsReady] = useState(mediaInfo?.readyToStream || false);
+
+  const [showTooltip, setShowTooltip] = useState(false);
+
   const touchStartX = useRef(null);
 
   const handleTouchStart = (e) => {
@@ -141,6 +144,8 @@ export default function MediaModal({
   // 🛑 Guard AFTER hooks, in render
   if (!mediaInfo) return null;
 
+  const isDisabled = currentIndex >= allMedia.length - 1;
+
   return (
     <div
       className={styles.modalOverlay}
@@ -182,22 +187,37 @@ export default function MediaModal({
             />
           )}
         </figure>
-        <div className={styles.arrowContainer}>
-          <button
-            className={styles.leftArrow}
-            onClick={() => setCurrentIndex((prev) => Math.max(prev - 1, 0))}
-          >
-            <MdOutlineKeyboardDoubleArrowLeft />
-          </button>
-          <button
-            className={styles.rightArrow}
-            onClick={() =>
-              setCurrentIndex((prev) => Math.min(prev + 1, allMedia.length - 1))
-            }
-          >
-            <MdOutlineKeyboardDoubleArrowRight />
-          </button>
-        </div>
+
+        <button
+          disabled={currentIndex < 1}
+          className={styles.leftArrow}
+          onClick={() => setCurrentIndex((prev) => Math.max(prev - 1, 0))}
+        >
+          <MdOutlineKeyboardDoubleArrowLeft />
+        </button>
+
+        <button
+          className={styles.rightArrow}
+          disabled={isDisabled}
+          onClick={() =>
+            setCurrentIndex((prev) => Math.min(prev + 1, allMedia.length - 1))
+          }
+          onTouchStart={() => isDisabled && setShowTooltip(true)}
+          onTouchEnd={() => setShowTooltip(false)}
+          title={
+            currentIndex >= allMedia.length - 1
+              ? "Scroll the gallery to load more items"
+              : "Next"
+          }
+        >
+          <MdOutlineKeyboardDoubleArrowRight />
+        </button>
+
+        {isDisabled && showTooltip && (
+          <div className={styles.tooltip}>
+            Skrolujte galeriju za više sadržaja.
+          </div>
+        )}
         <div className={styles.imageInfo}>
           <div className={styles.generalije}>
             <span className={styles.user}>{mediaInfo.userId}</span>
