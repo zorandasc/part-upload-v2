@@ -5,6 +5,8 @@ import Image from "next/image";
 import { FaTimesCircle, FaRegHeart, FaHeart } from "react-icons/fa";
 import { AiOutlineDownload } from "react-icons/ai";
 import { FaCogs } from "react-icons/fa";
+import { MdOutlineKeyboardDoubleArrowRight } from "react-icons/md";
+import { MdOutlineKeyboardDoubleArrowLeft } from "react-icons/md";
 
 import { getImageUrl, getVideoUrl, getVideoDownloadUrl } from "@/lib/helper";
 
@@ -64,7 +66,6 @@ export default function MediaModal({
     }
     //ZAPAMTI PROMJENE
     localStorage.setItem("likedMedia", JSON.stringify(updated));
-    //setLikedMedia(updated);
     //TOGGLE PRIKAZ
     setIsLiked(!isLiked);
   };
@@ -181,7 +182,22 @@ export default function MediaModal({
             />
           )}
         </figure>
-
+        <div className={styles.arrowContainer}>
+          <button
+            className={styles.leftArrow}
+            onClick={() => setCurrentIndex((prev) => Math.max(prev - 1, 0))}
+          >
+            <MdOutlineKeyboardDoubleArrowLeft />
+          </button>
+          <button
+            className={styles.rightArrow}
+            onClick={() =>
+              setCurrentIndex((prev) => Math.min(prev + 1, allMedia.length - 1))
+            }
+          >
+            <MdOutlineKeyboardDoubleArrowRight />
+          </button>
+        </div>
         <div className={styles.imageInfo}>
           <div className={styles.generalije}>
             <span className={styles.user}>{mediaInfo.userId}</span>
