@@ -183,8 +183,8 @@
 
 .tooltip {
   position: absolute;
-  top: 30%;
-  right: 30px; /* adjust based on your arrow button */
+  top: 20%;
+  right: 0px; /* adjust based on your arrow button */
   transform: translateY(-50%);
   background: rgba(28, 28, 27, 0.5);
   backdrop-filter: blur(10px);

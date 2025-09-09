@@ -214,7 +214,7 @@ export default function MediaModal({
 
         {isDisabled && showTooltip && (
           <div className={styles.tooltip}>
-            Skrolujte galeriju za više sadržaja.
+            Dobavite još stavki iz galerije.
           </div>
         )}
         <div className={styles.imageInfo}>

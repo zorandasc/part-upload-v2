@@ -93,7 +93,7 @@ export default function UploadModal({ isOpen, onClose }) {
 
           setUploading(false);
 
-          onClose();
+          onClose(true);
         },
       });
 
@@ -138,12 +138,15 @@ export default function UploadModal({ isOpen, onClose }) {
       console.error("Upload error:", err);
     } finally {
       setUploading(false);
-      onClose();
+      onClose(true);
     }
   };
 
   const handleUpload = () => {
-    if (!file) return;
+    if (!file) {
+      onClose(false);
+      return;
+    }
     if (file.type.startsWith("video/")) {
       handleVideoUpload();
     } else if (file.type.startsWith("image/")) {
@@ -161,7 +164,7 @@ export default function UploadModal({ isOpen, onClose }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          onClick={onClose}
+          onClick={() => onClose(false)}
         >
           <motion.div
             className={styles.modal}
