@@ -96,7 +96,7 @@
   height: 100%;
   max-height: 90vh;
   border-radius: 12px;
-  object-fit: cover;
+  aspect-ratio: 16 / 9; 
   background: black;
 }
 
