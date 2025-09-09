@@ -8,12 +8,15 @@ import MediaModal from "./MediaModal";
 import { getImageUrl, getVideoThumbnail } from "@/lib/helper";
 
 //lastImageRef is a React ref callback attached to the last image element in the gallery.
-export default function MediaGallery({ allMedia, lastMediaRef }) {
+export default function MediaGallery({ allMedia, loading, lastMediaRef }) {
   const [selectedIndex, setSelectedIndex] = useState(null);
 
   return (
     <>
       <section className={styles.uploadedImages}>
+        {!loading && allMedia?.length === 0 && (
+          <p className={styles.noContent}>Nema sadržaja.</p>
+        )}
         {allMedia?.map((item, i) => {
           const isLast = i === allMedia.length - 1; //determin last media file so we can attach observer
           return (

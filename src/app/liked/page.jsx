@@ -16,5 +16,5 @@ export default function Liked() {
     }
   }, []);
 
-  return <MediaGallery allMedia={allMedia} lastMediaRef={lastMediaRef} />;
+  return <MediaGallery allMedia={allMedia} loading={loading} lastMediaRef={lastMediaRef} />;
 }

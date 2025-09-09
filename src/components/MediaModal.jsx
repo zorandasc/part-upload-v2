@@ -112,7 +112,6 @@ export default function MediaModal({
 
   //POLL EVERY 10S FOR VIDEO THAT IS NOT READY
   //TO CHECK IF VIDEO IS READY TO STREAM
-
   useEffect(() => {
     // ✅ Skip if no mediaInfo yet
     if (!mediaInfo) return;

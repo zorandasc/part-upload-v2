@@ -98,10 +98,11 @@ export default function All() {
 
   return (
     <>
-      {!loading && allMedia?.length === 0 && (
-        <p style={{ textAlign: "center", color: "gray" }}>Nema sadržaja.</p>
-      )}
-      <MediaGallery allMedia={allMedia} lastMediaRef={lastMediaRef} />
+      <MediaGallery
+        allMedia={allMedia}
+        loading={loading}
+        lastMediaRef={lastMediaRef}
+      />
       {loading && <Spinner />}
       <UploadButton handleClick={() => setModalOpen(true)} />
       <UploadModal

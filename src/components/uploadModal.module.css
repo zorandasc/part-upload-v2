@@ -4,7 +4,7 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(205, 202, 194, 0.574);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -12,28 +12,33 @@
 }
 
 .modal {
-  background: white;
-  padding: 2rem;
+  padding: 3rem 2rem;
   border-radius: 12px;
   max-width: 500px;
   width: 90%;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+  color: #6f6959;
+  background: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
 }
 
 .fileInput {
-  margin: 1rem 0;
+  margin: 2rem 0;
+  font-size: 16px;
 }
 
 .uploadBtn {
-  background: #0070f3;
-  color: white;
+  background: #ffdd82;
+  color: rgb(25, 25, 25);
   padding: 0.6rem 1.2rem;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
 }
 
 .uploadBtn:hover {
-  background: #0059c1;
+  background: whitesmoke;
 }

@@ -7,6 +7,12 @@
   padding-top: 5rem;
 }
 
+.noContent {
+  text-align: center;
+  color: gray;
+  width: 100%;
+}
+
 .imageContainer {
   width: 100%;
   position: relative;
