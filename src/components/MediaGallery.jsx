@@ -16,10 +16,10 @@ export default function MediaGallery({ allMedia, loading, lastMediaRef }) {
     <>
       <section className={styles.uploadedImages}>
         {!loading && allMedia?.length === 0 && (
-          <p className={styles.noContent}>
+          <div className={styles.noContent}>
             <MdOutlineNoPhotography />
             Nema sadržaja.
-          </p>
+          </div>
         )}
         {allMedia?.map((item, i) => {
           const isLast = i === allMedia.length - 1; //determin last media file so we can attach observer
