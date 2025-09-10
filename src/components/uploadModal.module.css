@@ -12,7 +12,7 @@
 }
 
 .modal {
-  padding: 3rem 2rem;
+  padding: 2rem 2rem;
   border-radius: 12px;
   max-width: 500px;
   width: 90%;
@@ -21,24 +21,94 @@
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  & h2 {
+    font-family: Raleway, serif;
+    color: #6f6959;
+    cursor: pointer;
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 1;
+  }
 }
 
+.inputLabelContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px; /* space between upload button and preview */
+  margin: 20px 0;
+}
+
+/* Upload label styled like a square button */
+.fileLabel {
+  width: 150px;
+  height: 150px;
+  border: 2px dashed #bbb;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 40px;
+  color: #888;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.fileLabel:hover {
+  border-color: #ffdd82;
+  color: #ffdd82;
+}
+
+/* Hide native input */
 .fileInput {
-  margin: 2rem 0;
-  font-size: 16px;
+  display: none;
+}
+
+/* Preview wrapper (same square size as fileLabel) */
+.previewWrapper {
+  width: 150px;
+  height: 150px;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #000;
+}
+
+/* Preview image/video fits inside square */
+.previewImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* crop to fill square */
+  border-radius: 12px;
 }
 
 .uploadBtn {
-  background: #ffdd82;
-  color: rgb(25, 25, 25);
-  padding: 0.6rem 1.2rem;
-  border: none;
-  border-radius: 8px;
+  font-family: Raleway, serif;
+  color: whitesmoke;
   cursor: pointer;
-  font-weight: 600;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1;
+  position: relative;
+  text-align: center;
+  margin: 1vh auto;
+  padding: 1.8vh 0;
+  width: 100%;
+  max-width: 300px;
+  background: #6f6959;
+  -webkit-backdrop-filter: blur(15px);
+  backdrop-filter: blur(15px);
+  border-radius: 5px;
+  box-shadow: 1px 1px 0 0 rgba(255, 255, 255, 0.8) inset,
+    3px 5px 10px 0 rgba(0, 0, 0, 0.1);
+  text-decoration: none;
+  will-change: color, text-shadow, font-size;
+  transition: ease all 0.3s;
+  outline: none;
+  border: none;
 }
 
-.uploadBtn:hover {
-  background: whitesmoke;
-}

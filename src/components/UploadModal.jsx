@@ -1,17 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import * as tus from "tus-js-client"; // ✅ import tus
 import styles from "./uploadModal.module.css";
+import { FaCirclePlus } from "react-icons/fa6";
 
 export default function UploadModal({ isOpen, onClose }) {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [previewUrl, setPreviewUrl] = useState(null);
 
   const handleFileChange = (e) => {
-    setFile(e.target.files[0] || null);
+    const selectedFile = e.target.files[0] || null;
+    setFile(selectedFile);
+
+    if (selectedFile) {
+      const url = URL.createObjectURL(selectedFile);
+      setPreviewUrl(url);
+    } else {
+      setPreviewUrl(null);
+    }
   };
 
   const saveToDb = async (id, type) => {
@@ -138,6 +148,7 @@ export default function UploadModal({ isOpen, onClose }) {
       console.error("Upload error:", err);
     } finally {
       setUploading(false);
+
       onClose(true);
     }
   };
@@ -156,6 +167,21 @@ export default function UploadModal({ isOpen, onClose }) {
     }
   };
 
+  useEffect(() => {
+    if (!isOpen) {
+      setFile(null); // clear when modal closes
+    }
+  }, [isOpen]);
+
+  //To avoid memory leaks, revoke the object URL when the file changes or modal closes
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -164,7 +190,10 @@ export default function UploadModal({ isOpen, onClose }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          onClick={() => onClose(false)}
+          onClick={() => {
+            setFile(null);
+            onClose(false);
+          }}
         >
           <motion.div
             className={styles.modal}
@@ -175,18 +204,41 @@ export default function UploadModal({ isOpen, onClose }) {
             onClick={(e) => e.stopPropagation()}
           >
             <h2>Dodaj fotografiju ili video</h2>
-            <input
-              type="file"
-              accept="image/*,video/*"
-              className={styles.fileInput}
-              onChange={handleFileChange}
-            />
+            <div className={styles.inputLabelContainer}>
+              <label className={styles.fileLabel}>
+                <FaCirclePlus />
+                <input
+                  type="file"
+                  accept="image/*,video/*"
+                  className={styles.fileInput}
+                  onChange={handleFileChange}
+                />
+              </label>
+
+              {previewUrl && file && (
+                <div className={styles.previewWrapper}>
+                  {file.type.startsWith("image/") ? (
+                    <img
+                      src={previewUrl}
+                      alt="Preview"
+                      className={styles.previewImage}
+                    ></img>
+                  ) : (
+                    <video
+                      src={previewUrl}
+                      controls
+                      className={styles.previewImage}
+                    ></video>
+                  )}
+                </div>
+              )}
+            </div>
             <button
               className={styles.uploadBtn}
               onClick={handleUpload}
               disabled={uploading}
             >
-              {uploading ? `Uploading... ${progress}%` : "Upload"}
+              {uploading ? `Uploading... ${progress}%` : "Dodaj u album"}
             </button>
           </motion.div>
         </motion.div>

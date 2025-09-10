@@ -3,6 +3,7 @@ import { useState } from "react";
 import Image from "next/image";
 import styles from "./mediaGallery.module.css";
 import { TbPlayerPlayFilled } from "react-icons/tb";
+import { MdOutlineNoPhotography } from "react-icons/md";
 
 import MediaModal from "./MediaModal";
 import { getImageUrl, getVideoThumbnail } from "@/lib/helper";
@@ -15,7 +16,10 @@ export default function MediaGallery({ allMedia, loading, lastMediaRef }) {
     <>
       <section className={styles.uploadedImages}>
         {!loading && allMedia?.length === 0 && (
-          <p className={styles.noContent}>Nema sadržaja.</p>
+          <p className={styles.noContent}>
+            <MdOutlineNoPhotography />
+            Nema sadržaja.
+          </p>
         )}
         {allMedia?.map((item, i) => {
           const isLast = i === allMedia.length - 1; //determin last media file so we can attach observer
