@@ -90,10 +90,10 @@ export default function All() {
       setAllMedia([]);
       if (page === 1) {
         //AKO SMO VEC NA PAGE 1, ONDA SAMO REFECTH ALL
-        fetchAllMedia(); // re-fetch immediately
+        fetchAllMedia(); // re-fetch explicitly
       } else {
         //AKO NISMO VRATI SE NA POCETAK I PKAZI NOVI UNOS NA VRHU
-        setPage(1); // triggers useEffect normally
+        setPage(1); // triggers useEffect normally, implicit refetch
       }
     }
   };
@@ -106,7 +106,10 @@ export default function All() {
         lastMediaRef={lastMediaRef}
       />
       {loading && <Spinner />}
-      <UploadButton handleClick={() => setModalOpen(true)} />
+      <UploadButton
+        handleClick={() => setModalOpen(true)}
+        totalCount={totalCount}
+      />
       <UploadModal
         isOpen={isModalOpen}
         onClose={handleModalClose} // Auto-refresh gallery
