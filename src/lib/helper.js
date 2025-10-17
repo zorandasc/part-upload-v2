@@ -16,8 +16,14 @@ https://customer-${customerSubdomain}.cloudflarestream.com/${mediaId}/watch
 Thumbnail URL (static image preview):
 https://videodelivery.net/${mediaId}/thumbnails/thumbnail.jpg */
 
-export const getImageUrl = (mediaId, variant = "public") =>
-  `https://imagedelivery.net/${process.env.NEXT_PUBLIC_CF_ACCOUNT_HASH}/${mediaId}/${variant}`;
+export const getImageUrl = (mediaId, variant = "public") => {
+  const base = `https://imagedelivery.net/${process.env.NEXT_PUBLIC_CF_ACCOUNT_HASH}/${mediaId}`;
+  if (variant === "original") {
+    // Flexible variant syntax for original
+    return `${base}/w=0`;
+  }
+  return `${base}/${variant}`;
+};
 
 export const getVideoThumbnail = (mediaId) =>
   `https://videodelivery.net/${mediaId}/thumbnails/thumbnail.jpg`;
@@ -28,7 +34,7 @@ export const getVideoUrl = (mediaId) =>
 export const getVideoDownloadUrl = (mediaId) =>
   `https://videodelivery.net/${mediaId}/downloads/default.mp4`;
 
-/*CF Stream must download and encode the video, 
+/*CLOFLAR Stream must download and encode the video, 
     which can take a few seconds to a few minutes depending on the length of your video.
     When the readyToStream value returns true, your video is ready for streaming. 
     https://developers.cloudflare.com/stream/uploading-videos/upload-via-link/*/

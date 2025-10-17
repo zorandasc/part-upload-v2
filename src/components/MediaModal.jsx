@@ -73,7 +73,61 @@ export default function MediaModal({
     setIsLiked(!isLiked);
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
+    try {
+      let fileUrl;
+      let fileName;
+
+      if (mediaInfo.contentType === "video") {
+        fileUrl = getVideoDownloadUrl(mediaInfo.mediaId);
+        fileName = `${mediaInfo.name || mediaInfo.mediaId}.mp4`;
+      } else {
+        fileUrl = getImageUrl(mediaInfo.mediaId, "original");
+
+        // Fetch the image first
+        const res = await fetch(fileUrl);
+        const blob = await res.blob();
+
+        // Determine extension from MIME type
+        const mimeToExt = {
+          "image/jpeg": "jpg",
+          "image/png": "png",
+          "image/webp": "webp",
+          "image/gif": "gif",
+        };
+
+        const ext = mimeToExt[blob.type] || "jpg";
+
+        // Use mediaInfo.name base or fallback to mediaId
+        fileName = `${
+          mediaInfo.name?.split(".")[0] || mediaInfo.mediaId
+        }.${ext}`;
+
+        const blobUrl = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = blobUrl;
+        link.download = fileName;
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(blobUrl);
+        return;
+      }
+
+      // Video download (direct, no blob)
+      const link = document.createElement("a");
+      link.href = fileUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error("Download failed:", err);
+    }
+  };
+
+  /* const handleDownload = () => {
     const link = document.createElement("a");
     if (mediaInfo.contentType === "video") {
       link.href = getVideoDownloadUrl(mediaInfo.mediaId);
@@ -81,17 +135,19 @@ export default function MediaModal({
         ? mediaInfo.name
         : `${mediaInfo.name || "video"}.mp4`;
     } else {
-      link.href = getImageUrl(mediaInfo.mediaId, "public");
-      link.download = mediaInfo.name?.endsWith(".jpg")
-        ? mediaInfo.name
-        : `${mediaInfo.name || "image"}.jpg`;
+      link.href = getImageUrl(mediaInfo.mediaId, "original");
+      const ext = mediaInfo.name?.split(".").pop()?.toLowerCase();
+      const safeExt = ["jpg", "jpeg", "png", "webp"].includes(ext)
+        ? ext
+        : "jpg";
+      link.download = `${mediaInfo.name?.split(".")[0] || "image"}.${safeExt}`;
     }
 
     // Append to DOM, trigger, then cleanup (for Safari support)
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  };
+  }; */
 
   // Attach key listener
   useEffect(() => {
@@ -213,9 +269,7 @@ export default function MediaModal({
         </button>
 
         {isDisabled && showTooltip && (
-          <div className={styles.tooltip}>
-            Dobavite još stavki iz galerije.
-          </div>
+          <div className={styles.tooltip}>Dobavite još stavki iz galerije.</div>
         )}
         <div className={styles.imageInfo}>
           <div className={styles.generalije}>
