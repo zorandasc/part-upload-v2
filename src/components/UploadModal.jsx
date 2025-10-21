@@ -24,6 +24,7 @@ export default function UploadModal({ isOpen, onClose }) {
     }
   };
 
+  //SEND REQUEST TO MY BACKEND TO SAVE URL INSIDE MONGODB
   const saveToDb = async (id, type) => {
     try {
       const res = await fetch("/api/save-media", {
@@ -44,6 +45,12 @@ export default function UploadModal({ isOpen, onClose }) {
     }
   };
 
+  //1. ASK NEXT.JS BACKEND FOR UPLOAD URL
+  //2. BACKEND ASK CLOUDFLARE FOR URL
+  //3. BACKEND SEND UPLOAD URL TO FRONTEND
+  //4. FRONTEND MAKE DIRECT UPLOAD OF VIDEO VIA TUS
+  //   TO CLOUDFLARE, WITHOUT BACKEND.
+  //5. SEND URL TO NEXT.JS BACKEND TO SAVE URL TO MONGODB
   const handleVideoUpload = async () => {
     setUploading(true);
 
@@ -115,6 +122,12 @@ export default function UploadModal({ isOpen, onClose }) {
     }
   };
 
+  //1. ASK NEXT.JS BACKEND FOR UPLOAD URL
+  //2. NEXT.JS BACKEND ASK CLOUDFLARE FOR URL
+  //3. NEXT.JS BACKEND SEND UPLOAD URL TO FRONTEND
+  //4. FRONTEND MAKE DIRECT UPLOAD OF IMAGE
+  //   WITHOUT BACKEND.
+  //5. SEND URL TO NEXT.JS BACKEND TO SAVE URL TO MONGODB
   const handleImageUpload = async () => {
     setUploading(true);
     try {
