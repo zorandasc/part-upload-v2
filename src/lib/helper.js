@@ -16,6 +16,7 @@ https://customer-${customerSubdomain}.cloudflarestream.com/${mediaId}/watch
 Thumbnail URL (static image preview):
 https://videodelivery.net/${mediaId}/thumbnails/thumbnail.jpg */
 
+//GET IMAGE GALERY
 export const getImageUrl = (mediaId, variant = "public") => {
   const base = `https://imagedelivery.net/${process.env.NEXT_PUBLIC_CF_ACCOUNT_HASH}/${mediaId}`;
   if (variant === "original") {
@@ -25,14 +26,17 @@ export const getImageUrl = (mediaId, variant = "public") => {
   return `${base}/${variant}`;
 };
 
+//GET THUMBNAIL IMAGE
 export const getVideoThumbnail = (mediaId) =>
   `https://videodelivery.net/${mediaId}/thumbnails/thumbnail.jpg`;
 
+//GET VIDEO GALERY
 export const getVideoUrl = (mediaId) =>
   `https://iframe.videodelivery.net/${mediaId}`;
 
+//DOWNLOAD MP4
 export const getVideoDownloadUrl = (mediaId) =>
-  `https://videodelivery.net/${mediaId}/downloads/default.mp4`;
+  `https://customer-a2dln967kq1b7opm.cloudflarestream.com/${mediaId}/downloads/default.mp4`;
 
 /*CLOFLAR Stream must download and encode the video, 
     which can take a few seconds to a few minutes depending on the length of your video.

@@ -1,6 +1,7 @@
 // app/api/create-image-upload-url/route.js
 import { NextResponse } from "next/server";
 
+//1. Ask cloudflare for direct upload URL and send to frontend
 export async function POST() {
   try {
     const CF_ACCOUNT_ID = process.env.CF_ACCOUNT_ID;

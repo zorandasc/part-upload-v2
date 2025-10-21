@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 const CF_ACCOUNT_ID = process.env.CF_ACCOUNT_ID;
 const CF_STREAM_TOKEN = process.env.CF_STREAM_TOKEN;
 
+//1. Ask cloudflare for direct upload URL and send to frontend
 export async function POST(req) {
   const { fileSize, metadata } = await req.json(); // include metadata in request
 

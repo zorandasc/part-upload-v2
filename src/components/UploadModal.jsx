@@ -127,7 +127,8 @@ export default function UploadModal({ isOpen, onClose }) {
 
       console.log("uploadurl", uploadURL, "id", id);
 
-      // 2. Upload image file to Cloudflare Images
+      // 2. Upload image file directly to Cloudflare Images
+      // without involving my backend
       const formData = new FormData();
       formData.append("file", file);
 

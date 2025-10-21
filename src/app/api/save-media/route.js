@@ -1,6 +1,8 @@
 import clientPromise from "@/lib/mongodb";
 import { NextResponse } from "next/server";
 
+//CREATE NEW JSON OBJECT WITH GENERATED URL FROM CLODFLAER
+//AS A ATRIBUTE OF MONGDB COLLECTION
 export async function POST(req) {
   try {
     const data = await req.json();
