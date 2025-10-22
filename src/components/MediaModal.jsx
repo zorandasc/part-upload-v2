@@ -179,7 +179,7 @@ export default function MediaModal({
 
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(`/api/media-state/${mediaInfo._id}`);
+        const res = await fetch(`/api/get-media-state/${mediaInfo._id}`);
         if (res.ok) {
           const updated = await res.json();
 
