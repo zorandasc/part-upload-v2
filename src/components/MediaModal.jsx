@@ -2,11 +2,13 @@
 import styles from "./mediaModal.module.css";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { useUserContext } from "@/context/UserContext";
 import { FaTimesCircle, FaRegHeart, FaHeart } from "react-icons/fa";
 import { AiOutlineDownload } from "react-icons/ai";
 import { FaCogs } from "react-icons/fa";
 import { MdOutlineKeyboardDoubleArrowRight } from "react-icons/md";
 import { MdOutlineKeyboardDoubleArrowLeft } from "react-icons/md";
+import { RiDeleteBin6Line } from "react-icons/ri";
 
 import { getImageUrl, getVideoUrl, getVideoDownloadUrl } from "@/lib/helper";
 
@@ -20,6 +22,9 @@ export default function MediaModal({
     currentIndex !== null && allMedia?.[currentIndex]
       ? allMedia[currentIndex]
       : null;
+
+  //FOR DISPLAYING DELETE BUTTON IF LOGGED IN
+  const { user } = useUserContext();
 
   //FOR SETTING LIKED HARTS
   const [isLiked, setIsLiked] = useState(false);
@@ -148,6 +153,8 @@ export default function MediaModal({
     link.click();
     document.body.removeChild(link);
   }; */
+
+  const handleDelete = async () => {};
 
   // Attach key listener
   useEffect(() => {
@@ -280,6 +287,15 @@ export default function MediaModal({
           </div>
 
           <div className={styles.buttonsCotainer}>
+            {user && (
+              <button
+                className={styles.closeButton}
+                aria-label="Delete Media"
+                onClick={handleDelete}
+              >
+                <RiDeleteBin6Line />
+              </button>
+            )}
             <button
               className={styles.closeButton}
               aria-label="Download Media"
