@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useLikedContext } from "@/context/LikedContext";
 import MediaGallery from "@/components/MediaGallery";
 import UploadButton from "@/components/UploadButton";
 import UploadModal from "@/components/UploadModal";
@@ -14,6 +15,8 @@ export default function All() {
   const [hasMore, setHasMore] = useState(true);
 
   const [isModalOpen, setModalOpen] = useState(false);
+
+  const { handleLiked, isLiked } = useLikedContext();
 
   const observer = useRef();
 
@@ -87,6 +90,7 @@ export default function All() {
   const handleModalClose = (didUpload = false) => {
     setModalOpen(false);
     if (didUpload) {
+      //OBRISI STARO STANJE
       setAllMedia([]);
       if (page === 1) {
         //AKO SMO VEC NA PAGE 1, ONDA SAMO REFECTH ALL
@@ -98,14 +102,23 @@ export default function All() {
     }
   };
 
+  //RFERESH LIKEDE ARRAY IN LOCAL STORAGE AND REFETCH ALL
+  //AFTER DELETE OF MODAL
+  const handelRefreshMedia = (mediaInfo) => {
+    const liked = isLiked(mediaInfo?._id);
+    if (liked) handleLiked(mediaInfo);
+    fetchAllMedia();
+  };
+
   return (
     <>
+      {loading && <Spinner />}
       <MediaGallery
         allMedia={allMedia}
+        refreshMediaAfterDelete={handelRefreshMedia}
         loading={loading}
         lastMediaRef={lastMediaRef}
       />
-      {loading && <Spinner />}
       <UploadButton
         handleClick={() => setModalOpen(true)}
         totalCount={totalCount}

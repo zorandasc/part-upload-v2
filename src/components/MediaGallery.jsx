@@ -9,7 +9,12 @@ import MediaModal from "./MediaModal";
 import { getImageUrl, getVideoThumbnail } from "@/lib/helper";
 
 //lastImageRef is a React ref callback attached to the last image element in the gallery.
-export default function MediaGallery({ allMedia, loading, lastMediaRef }) {
+export default function MediaGallery({
+  allMedia,
+  refreshMediaAfterDelete,
+  loading,
+  lastMediaRef,
+}) {
   const [selectedIndex, setSelectedIndex] = useState(null);
 
   return (
@@ -64,6 +69,7 @@ export default function MediaGallery({ allMedia, loading, lastMediaRef }) {
         currentIndex={selectedIndex}
         setCurrentIndex={setSelectedIndex}
         onClose={() => setSelectedIndex(null)}
+        refreshMediaAfterDelete={refreshMediaAfterDelete}
       ></MediaModal>
     </>
   );

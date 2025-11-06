@@ -3,6 +3,7 @@ import styles from "./mediaModal.module.css";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useUserContext } from "@/context/UserContext";
+import { useLikedContext } from "@/context/LikedContext";
 import { FaTimesCircle, FaRegHeart, FaHeart } from "react-icons/fa";
 import { AiOutlineDownload } from "react-icons/ai";
 import { FaCogs } from "react-icons/fa";
@@ -17,6 +18,7 @@ export default function MediaModal({
   currentIndex,
   setCurrentIndex,
   onClose,
+  refreshMediaAfterDelete,
 }) {
   const mediaInfo =
     currentIndex !== null && allMedia?.[currentIndex]
@@ -25,9 +27,9 @@ export default function MediaModal({
 
   //FOR DISPLAYING DELETE BUTTON IF LOGGED IN
   const { user } = useUserContext();
+  const { handleLiked, isLiked } = useLikedContext();
+  const liked = isLiked(mediaInfo?._id);
 
-  //FOR SETTING LIKED HARTS
-  const [isLiked, setIsLiked] = useState(false);
   //FOR UPLOADED VIDEO IN PROCESING
   const [isReady, setIsReady] = useState(mediaInfo?.readyToStream || false);
 
@@ -56,26 +58,6 @@ export default function MediaModal({
     } else if (e.key === "Escape") {
       onClose();
     }
-  };
-
-  const handleLiked = () => {
-    if (!mediaInfo) return;
-
-    const stored = localStorage.getItem("likedMedia");
-    const likedMedia = stored ? JSON.parse(stored) : [];
-
-    let updated;
-    if (isLiked) {
-      //AKO JE VEC LAJKOVAN IZBACI IZ LIKE
-      updated = likedMedia.filter((media) => media._id !== mediaInfo._id);
-    } else {
-      //AKO NIJE UBACI U LIKED
-      updated = [...likedMedia, mediaInfo];
-    }
-    //ZAPAMTI PROMJENE
-    localStorage.setItem("likedMedia", JSON.stringify(updated));
-    //TOGGLE PRIKAZ
-    setIsLiked(!isLiked);
   };
 
   const handleDownload = async () => {
@@ -154,24 +136,40 @@ export default function MediaModal({
     document.body.removeChild(link);
   }; */
 
-  const handleDelete = async () => {};
+  const handleDelete = async () => {
+    if (!mediaInfo?._id) return;
+    try {
+      //DELETE FROM DB
+      const res = await fetch("/api/delete-media", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ _id: mediaInfo._id }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        console.error("❌ Media delete failed:", data.error || res.statusText);
+        alert("Failed to delete media. Please try again.");
+        return;
+      }
+      console.log("✅ Media deleted successfully");
+
+      // ✅ re-fetch (REFRESH) parent befor MODAL close
+      await refreshMediaAfterDelete(mediaInfo);
+
+      // close modal
+      onClose();
+    } catch (error) {
+      console.error("Delete failed:", error);
+    }
+  };
 
   // Attach key listener
   useEffect(() => {
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [currentIndex]);
-
-  // Sync with localStorage whenever index changes
-  //TO CHECK IF MEDIA IS LIKED (IN LOCALSTORAGE), SO THAT HART CAN BE
-  //VISUALY CHECKED
-  useEffect(() => {
-    if (!mediaInfo) return;
-    const stored = localStorage.getItem("likedMedia");
-    const liked = stored ? JSON.parse(stored) : [];
-
-    setIsLiked(liked.some((img) => img._id === mediaInfo._id));
-  }, [currentIndex, mediaInfo]);
 
   //POLL EVERY 10S FOR VIDEO THAT IS NOT READY
   //TO CHECK IF VIDEO IS READY TO STREAM
@@ -206,6 +204,7 @@ export default function MediaModal({
   // 🛑 Guard AFTER hooks, in render
   if (!mediaInfo) return null;
 
+  //DISABLE SCROLER U DESNO AKO NEMA VISE CONTENTA
   const isDisabled = currentIndex >= allMedia.length - 1;
 
   return (
@@ -305,10 +304,10 @@ export default function MediaModal({
             </button>
             <button
               className={styles.closeButton}
-              onClick={handleLiked}
+              onClick={() => handleLiked(mediaInfo)}
               aria-label="Like Media"
             >
-              {isLiked ? <FaHeart /> : <FaRegHeart />}
+              {liked ? <FaHeart /> : <FaRegHeart />}
             </button>
             <button
               className={styles.closeButton}

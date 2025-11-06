@@ -1,20 +1,28 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useLikedContext } from "@/context/LikedContext";
 import MediaGallery from "@/components/MediaGallery";
 
 export default function Liked() {
-  const [allMedia, setAllMedia] = useState([]);
+  const { likedMedia, handleLiked, isLiked } = useLikedContext();
   const [loading, setLoading] = useState(false);
 
   const lastMediaRef = null;
 
-  useEffect(() => {
-    const storedMedia = localStorage.getItem("likedMedia");
-    if (storedMedia) {
-      setAllMedia(JSON.parse(storedMedia));
-    }
-  }, []);
+  //RFERESH LIKDE ARRAY IN LOCAL STORAGE
+  //AFTER DELETE OF MODAL
+  const handelRefreshMedia = (mediaInfo) => {
+    const liked = isLiked(mediaInfo?._id);
+    if (liked) handleLiked(mediaInfo);
+  };
 
-  return <MediaGallery allMedia={allMedia} loading={loading} lastMediaRef={lastMediaRef} />;
+  return (
+    <MediaGallery
+      allMedia={likedMedia}
+      refreshMediaAfterDelete={handelRefreshMedia}
+      loading={loading}
+      lastMediaRef={lastMediaRef}
+    />
+  );
 }

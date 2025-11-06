@@ -2,6 +2,7 @@ import clientPromise from "@/lib/mongodb";
 import { NextResponse } from "next/server";
 
 //CREATE AND SAVE NEW JSON OBJECT WITH GENERATED URL FROM CLODFLAER
+//THE IMAGE OR VIDEO HAVE DIRECT UPLOAD FROM FRONTEND
 export async function POST(req) {
   try {
     const data = await req.json();

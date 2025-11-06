@@ -2,6 +2,7 @@ import { Geist, Geist_Mono, Great_Vibes } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import { UserProvider } from "@/context/UserContext";
+import { LikedProvider } from "@/context/LikedContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,8 +32,10 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} ${greatVibes.variable}`}
       >
         <UserProvider>
-          <Navbar></Navbar>
-          {children}
+          <LikedProvider>
+            <Navbar></Navbar>
+            {children}
+          </LikedProvider>
         </UserProvider>
       </body>
     </html>
