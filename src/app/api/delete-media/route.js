@@ -50,7 +50,8 @@ export async function POST(req) {
       });
 
       if (!res.ok) {
-        //IF FAILURE REVERT DELETED MONGODB OBJECT, RETURN FAILURE TO FRONTEND
+        //IF CLOUDFLARE DELETE FAILURE, REVERT DELETED MONGODB OBJECT,
+        //RETURN FAILURE TO FRONTEND
         await db.collection("media").insertOne(existing);
 
         return NextResponse.json(
@@ -59,8 +60,9 @@ export async function POST(req) {
         );
       }
     }
-    return NextResponse.json({ success: true });
+
     //IF SUCESS, RETURN SUCCESS TO FRONTEND
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error("❌ Error deleting media:", error);
     return NextResponse.json(

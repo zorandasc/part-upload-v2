@@ -139,7 +139,7 @@ export default function MediaModal({
   const handleDelete = async () => {
     if (!mediaInfo?._id) return;
     try {
-      //DELETE FROM DB
+      //DELETE FROM DB AND FROM CLOUDFLARE
       const res = await fetch("/api/delete-media", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
