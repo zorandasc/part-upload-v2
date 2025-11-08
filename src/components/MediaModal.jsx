@@ -176,12 +176,13 @@ export default function MediaModal({
   useEffect(() => {
     // ✅ Skip if no mediaInfo yet
     if (!mediaInfo) return;
-    //CHECK ONLY FOR VIDEO AND ONLY IF IT NOT READY
+    //setIsReady(true) WILL BE EXESUTED ALWAYS FOR IMAGE
+    //AND FOR VIDEO IF READYTOSTREAM
     if (mediaInfo.contentType !== "video" || mediaInfo.readyToStream) {
       setIsReady(true);
       return;
     }
-
+    //INTERVAL WILL START IF MEDIA IS: VIDEO AND readyToStream=FALSE
     const interval = setInterval(async () => {
       try {
         const res = await fetch(`/api/get-media-state/${mediaInfo._id}`);

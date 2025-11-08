@@ -102,8 +102,7 @@ export default function All() {
     }
   };
 
-  //RFERESH LIKEDE ARRAY IN LOCAL STORAGE AND REFETCH ALL
-  //AFTER DELETE OF MODAL
+  //AFTER MODAL DELETE REMOVE FROM LOCAL LIKED STORAGE AND REFETCH ALL
   const handelRefreshMedia = (mediaInfo) => {
     const liked = isLiked(mediaInfo?._id);
     if (liked) handleLiked(mediaInfo);

@@ -247,13 +247,15 @@ export default function UploadModal({ isOpen, onClose }) {
                 </div>
               )}
             </div>
-            <button
-              className={styles.uploadBtn}
-              onClick={handleUpload}
-              disabled={uploading}
-            >
-              {uploading ? `Uploading... ${progress}%` : "Dodaj u album"}
-            </button>
+            {file && (
+              <button
+                className={styles.uploadBtn}
+                onClick={handleUpload}
+                disabled={uploading}
+              >
+                {uploading ? `Uploading... ${progress}%` : "Dodaj u album"}
+              </button>
+            )}
           </motion.div>
         </motion.div>
       )}
