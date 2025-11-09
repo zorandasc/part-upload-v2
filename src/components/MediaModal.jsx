@@ -228,7 +228,7 @@ export default function MediaModal({
             isReady ? (
               <iframe
                 key={isReady ? "ready" : "processing"} // Force re-render when ready
-                src={isReady ? getVideoUrl(mediaInfo.mediaId) : undefined}
+                src={getVideoUrl(mediaInfo.mediaId)}
                 className={styles.modalVideo}
                 allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
                 allowFullScreen
