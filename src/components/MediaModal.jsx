@@ -25,6 +25,8 @@ export default function MediaModal({
       ? allMedia[currentIndex]
       : null;
 
+  console.log(mediaInfo);
+
   //FOR DISPLAYING DELETE BUTTON IF LOGGED IN
   const { user } = useUserContext();
   const { handleLiked, isLiked } = useLikedContext();
@@ -200,7 +202,7 @@ export default function MediaModal({
     }, 10000); //every 10s
 
     return () => clearInterval(interval);
-  }, [currentIndex, mediaInfo, setCurrentIndex]);
+  }, [currentIndex, mediaInfo?._id, setCurrentIndex]);
 
   // 🛑 Guard AFTER hooks, in render
   if (!mediaInfo) return null;
