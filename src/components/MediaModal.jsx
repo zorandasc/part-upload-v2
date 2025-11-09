@@ -178,6 +178,7 @@ export default function MediaModal({
   //SO, ✅ Sync local state whenever mediaInfo changes
   useEffect(() => {
     if (!mediaInfo) return;
+    //The !! (double negation operator) is used to guarantee the value is a strict boolean
     setIsReady(!!mediaInfo.readyToStream);
   }, [mediaInfo?._id, mediaInfo?.readyToStream]);
 
