@@ -19,6 +19,8 @@ export default function MediaModal({
   setCurrentIndex,
   onClose,
   refreshMediaAfterDelete,
+  //function to update allgalery item when video ready to stream
+  updateMediaItem,
 }) {
   const mediaInfo =
     currentIndex !== null && allMedia?.[currentIndex]
@@ -27,10 +29,14 @@ export default function MediaModal({
 
   //FOR DISPLAYING DELETE BUTTON IF LOGGED IN
   const { user } = useUserContext();
+
+  //GET LIKED CONTEXT
   const { handleLiked, isLiked } = useLikedContext();
+
+  //IS THIS MODAL LIKED
   const liked = isLiked(mediaInfo?._id);
 
-  //FOR UPLOADED VIDEO IN PROCESING
+  //IS UPLOADED VIDEO READY TO STREAM
   const [isReady, setIsReady] = useState(mediaInfo?.readyToStream || false);
 
   const [showTooltip, setShowTooltip] = useState(false);
@@ -165,34 +171,57 @@ export default function MediaModal({
     }
   };
 
+  //BECAUSE mODAL IS NOT PAGE WE MUST SINCHRONIZE STATE ON CHANGE
+  //The issue is that useState only uses the initial value once, when the component mounts.
+  //So if the first opened media had readyToStream = true,
+  //and you open another one where it’s false, your isReady will still be true — stuck with stale state.
+  //SO, ✅ Sync local state whenever mediaInfo changes
+  useEffect(() => {
+    if (!mediaInfo) return;
+    setIsReady(!!mediaInfo.readyToStream);
+  }, [mediaInfo?._id, mediaInfo?.readyToStream]);
+
   // Attach key listener
   useEffect(() => {
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [currentIndex]);
 
-  //POLL EVERY 10S FOR VIDEO THAT IS NOT READY
-  //TO CHECK IF VIDEO IS READY TO STREAM
+  //POLL EVERY 10S FOR VIDEO TO CHECK IF VIDEO IS READY TO STREAM.
+  //FOR VIDEO TO BE READY TO STREAM MUST BE:
+  //1. CLOUDFLARE MUST SET FLAG readyToStream TO TRUE
+  //2. CDN NETWORK MUST POBAGATE CONTEN
   useEffect(() => {
     // ✅ Skip if no mediaInfo yet
     if (!mediaInfo) return;
-    //setIsReady(true) WILL BE EXESUTED ALWAYS FOR IMAGE
-    //AND FOR VIDEO IF READYTOSTREAM
+
+    //SKIP FOR IMAGE AND FOR VIDEO WITH readyToStream IS TRUE
     if (mediaInfo.contentType !== "video" || mediaInfo.readyToStream) {
       setIsReady(true);
       return;
     }
-    //INTERVAL WILL START IF MEDIA IS: VIDEO AND readyToStream=FALSE
+
+    //THIS 10S INTERVAL WILL START IF MEDIA IS:
+    // 1. VIDEO
+    // 2. AND readyToStream=FALSE
     const interval = setInterval(async () => {
       try {
+        //THIS API WILL CHECK:
+        //IF CLOUDFLARE IS READYTOSTREMA
+        //AND IF CDN NETWORK IS PROPAGATED
         const res = await fetch(`/api/get-media-state/${mediaInfo._id}`);
 
         if (res.ok) {
           const updated = await res.json();
+          console.log("updated.readyToStream", updated.readyToStream);
 
           if (updated.readyToStream) {
+            //CLOUDFLARE IS READY
             setIsReady(true); // ✅ flip local flag
             clearInterval(interval);
+            // ✅ Tell parent gallery to update that one item
+            // BECAUSE Modal IS NOT PAGE
+            updateMediaItem(mediaInfo._id, { readyToStream: true });
           }
         }
       } catch (err) {
@@ -228,7 +257,7 @@ export default function MediaModal({
             isReady ? (
               <iframe
                 key={isReady ? "ready" : "processing"} // Force re-render when ready
-                src={getVideoUrl(mediaInfo.mediaId)}
+                src={isReady ? getVideoUrl(mediaInfo.mediaId) : undefined}
                 className={styles.modalVideo}
                 allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
                 allowFullScreen

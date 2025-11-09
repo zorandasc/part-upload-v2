@@ -14,7 +14,7 @@ export default function Liked() {
   //AFTER DELETE OF MODAL
   const handelRefreshMedia = (mediaInfo) => {
     const liked = isLiked(mediaInfo?._id);
-    if (liked) handleLiked(mediaInfo);
+    if (liked) handleLiked(mediaInfo); //THIS WILL UNSET ITEM IN LIKED ARRAY IN CONTEXT
   };
 
   return (

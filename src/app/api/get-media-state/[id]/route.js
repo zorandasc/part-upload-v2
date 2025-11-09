@@ -1,6 +1,7 @@
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
+import { getVideoUrl } from "@/lib/helper";
 
 const CF_ACCOUNT_ID = process.env.CF_ACCOUNT_ID;
 const CF_STREAM_TOKEN = process.env.CF_STREAM_TOKEN;
@@ -62,18 +63,32 @@ export async function GET(req, context) {
     if (!mediaInDb.readyToStream) {
       const cfStatus = await getCloudflareVideoStatus(mediaInDb.mediaId);
 
-      if (cfStatus.readyToStream && cfStatus.status === "ready") {
-        //if true UPDTE DB AND RESPONSE
-        await db
-          .collection("media")
-          .updateOne(
-            { _id: mediaInDb._id },
-            { $set: { readyToStream: true, status: cfStatus.status } }
-          );
+      console.log("cfStatus.readyToStrea", cfStatus.readyToStream);
 
-        // also update in the response
-        mediaInDb.readyToStream = true;
-        mediaInDb.status = cfStatus.status;
+      if (cfStatus.readyToStream && cfStatus.status === "ready") {
+        // Before marking ready, probe CDN availability
+        const videoUrl = getVideoUrl(mediaInDb.mediaId);
+        try {
+          const probe = await fetch(videoUrl, { method: "HEAD" });
+          if (probe.ok) {
+            //if BOTH CLOUDFLARE AND CDN NETWORK true
+            //THEN UPDTE IN DB AND RESPONSE
+            await db
+              .collection("media")
+              .updateOne(
+                { _id: mediaInDb._id },
+                { $set: { readyToStream: true, status: cfStatus.status } }
+              );
+
+            // also update in the response
+            mediaInDb.readyToStream = true;
+            mediaInDb.status = cfStatus.status;
+          } else {
+            console.log("CDN not ready yet, will retry later...");
+          }
+        } catch (error) {
+          console.log("CDN still propagating, skipping update this round");
+        }
       }
     }
     return NextResponse.json(mediaInDb, {

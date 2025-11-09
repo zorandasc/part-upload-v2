@@ -109,6 +109,16 @@ export default function All() {
     fetchAllMedia();
   };
 
+  //AFTER MODAL THROUHG 10S INTERVAL DETECT VIDEO IS READY TO STREAM
+  //UPDATE ALL GALLERY
+  const updateMediaItem = (id, updatedFields) => {
+    setAllMedia((prev) =>
+      prev.map((item) =>
+        item._id === id ? { ...item, ...updatedFields } : item
+      )
+    );
+  };
+
   return (
     <>
       {loading && <Spinner />}
@@ -117,6 +127,7 @@ export default function All() {
         refreshMediaAfterDelete={handelRefreshMedia}
         loading={loading}
         lastMediaRef={lastMediaRef}
+        updateMediaItem={updateMediaItem}
       />
       <UploadButton
         handleClick={() => setModalOpen(true)}

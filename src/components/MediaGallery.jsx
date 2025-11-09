@@ -14,6 +14,7 @@ export default function MediaGallery({
   refreshMediaAfterDelete,
   loading,
   lastMediaRef,
+  updateMediaItem,
 }) {
   const [selectedIndex, setSelectedIndex] = useState(null);
 
@@ -70,6 +71,7 @@ export default function MediaGallery({
         setCurrentIndex={setSelectedIndex}
         onClose={() => setSelectedIndex(null)}
         refreshMediaAfterDelete={refreshMediaAfterDelete}
+        updateMediaItem={updateMediaItem}
       ></MediaModal>
     </>
   );
