@@ -25,8 +25,6 @@ export default function MediaModal({
       ? allMedia[currentIndex]
       : null;
 
-  console.log(mediaInfo);
-
   //FOR DISPLAYING DELETE BUTTON IF LOGGED IN
   const { user } = useUserContext();
   const { handleLiked, isLiked } = useLikedContext();
@@ -188,6 +186,7 @@ export default function MediaModal({
     const interval = setInterval(async () => {
       try {
         const res = await fetch(`/api/get-media-state/${mediaInfo._id}`);
+
         if (res.ok) {
           const updated = await res.json();
 
@@ -228,7 +227,8 @@ export default function MediaModal({
           {mediaInfo.contentType === "video" ? (
             isReady ? (
               <iframe
-                src={getVideoUrl(mediaInfo.mediaId)}
+                key={isReady ? "ready" : "processing"} // Force re-render when ready
+                src={isReady ? getVideoUrl(mediaInfo.mediaId) : undefined}
                 className={styles.modalVideo}
                 allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
                 allowFullScreen

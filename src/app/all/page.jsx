@@ -59,7 +59,7 @@ export default function All() {
     };
   }, []);
 
-  //to stabilize it and avoid unnecessary effect triggers:
+  //useCallback to stabilize it and avoid unnecessary effect triggers:
   const fetchAllMedia = useCallback(async () => {
     setLoading(true);
     try {
@@ -102,7 +102,7 @@ export default function All() {
     }
   };
 
-  //AFTER MODAL DELETE REMOVE FROM LOCAL LIKED STORAGE AND REFETCH ALL
+  //AFTER MODAL DELETE, REMOVE FROM LOCAL LIKED STORAGE AND REFETCH ALL
   const handelRefreshMedia = (mediaInfo) => {
     const liked = isLiked(mediaInfo?._id);
     if (liked) handleLiked(mediaInfo);
