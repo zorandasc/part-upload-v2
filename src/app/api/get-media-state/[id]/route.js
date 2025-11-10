@@ -41,6 +41,9 @@ export const getCloudflareVideoStatus = async (mediaId) => {
 //CALLED BY MEDIAMODAL, TO CHECK IF VIDEO IS READY TO STREAM
 /**
  * Check if video is ready to stream — called from frontend polling.
+ * THE VIDEO IS READY TO STREM IF:
+ * 1. CLOUDFLARE SET FLAG readyToStream TO TRUE
+ * 2. CDN NETWORK HAS PROPAGATED CONTENT
  */
 export async function GET(req, context) {
   try {
@@ -61,18 +64,23 @@ export async function GET(req, context) {
 
     // Only poll Cloudflare if  FALSE in DB,not ready yet,
     if (!mediaInDb.readyToStream) {
+      //1. Get readyToStream FROM CLOUDFLARE
       const cfStatus = await getCloudflareVideoStatus(mediaInDb.mediaId);
 
       console.log("cfStatus.readyToStrea", cfStatus.readyToStream);
 
       if (cfStatus.readyToStream && cfStatus.status === "ready") {
-        // Before marking ready, probe CDN availability
+        //2. Before marking ready, probe CDN availability
         const videoUrl = getVideoUrl(mediaInDb.mediaId);
         try {
           const probe = await fetch(videoUrl, { method: "HEAD" });
           if (probe.ok) {
             //if BOTH CLOUDFLARE AND CDN NETWORK true
             //THEN UPDTE IN DB AND RESPONSE
+
+            //Sometimes the CDN is slow to replicate, even after a 200.
+            //await new Promise((r) => setTimeout(r, 10000)); // wait 10s
+
             await db
               .collection("media")
               .updateOne(
