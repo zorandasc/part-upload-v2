@@ -43,7 +43,7 @@ export default function MediaGallery({
                     priority
                     src={getVideoThumbnail(item.mediaId)}
                     onError={(e) => {
-                      e.currentTarget.src = "./logo.png";
+                      e.currentTarget.src = "/logo.png";
                     }}
                     alt={item.name || "Video thumbnail"}
                     fill
