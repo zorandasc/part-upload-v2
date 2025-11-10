@@ -6,7 +6,7 @@ import { getVideoUrl } from "@/lib/helper";
 const CF_ACCOUNT_ID = process.env.CF_ACCOUNT_ID;
 const CF_STREAM_TOKEN = process.env.CF_STREAM_TOKEN;
 
-/*CLOUDFLAR Stream must download and encode the video, 
+/*CLOUDFLAR Stream must upload and encode the video, 
 which can take a few seconds to a few minutes depending on the length of your video.
 When the readyToStream value returns true, your video is ready for streaming. 
 https://developers.cloudflare.com/stream/uploading-videos/upload-via-link/*/
@@ -36,6 +36,30 @@ export const getCloudflareVideoStatus = async (mediaId) => {
     duration: data.result.duration,
     size: data.result.size,
   };
+};
+
+//TRY TO ENABLE VIDEO TO BE DOWNLOABLE AS .MP4
+//this is done only once per video
+export const enableCloudflareVideoDownload = async (mediaId) => {
+  const res = await fetch(
+    `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/stream/${mediaId}/downloads`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${CF_STREAM_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  /*
+  const data = await res.json();
+  if (!res.ok || !data.success)
+    throw new Error(
+      `Failed to enable download: ${JSON.stringify(data.errors)}`
+    );
+
+  return data.result;
+  */
 };
 
 //CALLED BY MEDIAMODAL, TO CHECK IF VIDEO IS READY TO STREAM
@@ -75,22 +99,34 @@ export async function GET(req, context) {
         try {
           const probe = await fetch(videoUrl, { method: "HEAD" });
           if (probe.ok) {
+            console.log("probe.ok", probe.ok);
             //if BOTH CLOUDFLARE AND CDN NETWORK true
             //THEN UPDTE IN DB AND RESPONSE
 
             //Sometimes the CDN is slow to replicate, even after a 200.
+            //so you can add small delay
             //await new Promise((r) => setTimeout(r, 10000)); // wait 10s
+
+            //TRY TO ENABLE VIDOE TO BE DOWLOADABLE
+            await enableCloudflareVideoDownload(mediaInDb.mediaId);
 
             await db
               .collection("media")
               .updateOne(
                 { _id: mediaInDb._id },
-                { $set: { readyToStream: true, status: cfStatus.status } }
+                {
+                  $set: {
+                    readyToStream: true,
+                    status: cfStatus.status,
+                    allowDownload: true,
+                  },
+                }
               );
 
             // also update in the response
             mediaInDb.readyToStream = true;
             mediaInDb.status = cfStatus.status;
+            mediaInDb.allowDownload = true;
           } else {
             console.log("CDN not ready yet, will retry later...");
           }
