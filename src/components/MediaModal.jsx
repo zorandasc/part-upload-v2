@@ -130,28 +130,6 @@ export default function MediaModal({
     }
   };
 
-  /* const handleDownload = () => {
-    const link = document.createElement("a");
-    if (mediaInfo.contentType === "video") {
-      link.href = getVideoDownloadUrl(mediaInfo.mediaId);
-      link.download = mediaInfo.name?.endsWith(".mp4")
-        ? mediaInfo.name
-        : `${mediaInfo.name || "video"}.mp4`;
-    } else {
-      link.href = getImageUrl(mediaInfo.mediaId, "original");
-      const ext = mediaInfo.name?.split(".").pop()?.toLowerCase();
-      const safeExt = ["jpg", "jpeg", "png", "webp"].includes(ext)
-        ? ext
-        : "jpg";
-      link.download = `${mediaInfo.name?.split(".")[0] || "image"}.${safeExt}`;
-    }
-
-    // Append to DOM, trigger, then cleanup (for Safari support)
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }; */
-
   const handleDelete = async () => {
     if (!mediaInfo?._id) return;
     try {
@@ -184,11 +162,13 @@ export default function MediaModal({
   //BECAUSE mODAL IS NOT PAGE WE MUST SINCHRONIZE LOCAL STATE ON CHANGE
   //The issue is that useState only uses the initial value once, when the component mounts.
   //So if the first opened media had readyToStream = true,
-  //and you open another one where it’s false, your isReady will still be true — stuck with stale state.
+  //and you open another one where it’s false, your isReady 
+  // will still be true — stuck with stale state.
   //SO, ✅ Sync local state whenever mediaInfo changes
   useEffect(() => {
     if (!mediaInfo) return;
-    //The !! (double negation operator) is used to guarantee the value is a strict boolean
+    //The !! (double negation operator) is used to guarantee 
+    // the value is a strict boolean
     setIsReady(!!mediaInfo.readyToStream);
   }, [mediaInfo?._id, mediaInfo?.readyToStream]);
 

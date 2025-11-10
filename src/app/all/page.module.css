@@ -3,7 +3,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px; /* Adjust the gap between images as needed */
-  padding-bottom: 3rem;
+  padding-bottom: 5rem;
   padding-top: 5rem;
 }
 

@@ -84,12 +84,15 @@ export default function All() {
     }
   }, [page]);
 
-  //WHEN SCROLING TO END OF PAGE IN MODAL VIEW GET MORE
-  //RETUERN PROMISE SO CALLER (MEDIAMODAL) can awaited
+  //WHEN SCROLING TO THE END OF PAGE IN MODAL VIEW.
+  //WE NEED TO GET MORE ITEMS
+  //THIS FUNCTION RETUERN PROMISE SO CALLER (MEDIAMODAL) can awaited
+  //SO IF WE AWAIT IN MODAL, CURRENT INDEX WILL NOT GO TO UNDEFINED
   const loadMoreModalItems = async () => {
     return new Promise((resolve) => {
+      //SET NEXT PAGE
       setPage((p) => p + 1);
-      // Wait for next fetchAllMedia to complete
+      //BUT Wait for next fetchAllMedia to complete
       //odnsono da loading bude false
       const interval = setInterval(() => {
         if (!loading) {
@@ -118,11 +121,13 @@ export default function All() {
     }
   };
 
-  //AFTER MODAL DELETE, REMOVE FROM LOCAL LIKED STORAGE AND REFETCH ALL
-  const handelRefreshMedia = (mediaInfo) => {
+  //AFTER MODAL DELETE,
+  //REMOVE FROM LOCALSTORAGE LIKED STORED IN CONTEXT
+  //AND REFETCH ALL
+  const handelRefreshMedia = async (mediaInfo) => {
     const liked = isLiked(mediaInfo?._id);
     if (liked) handleLiked(mediaInfo);
-    fetchAllMedia();
+    await fetchAllMedia();
   };
 
   //AFTER MODAL INTERVAL DETECT VIDEO IS READY TO STREAM
