@@ -85,8 +85,8 @@ export default function All() {
   }, [page]);
 
   //WHEN SCROLING TO END OF PAGE IN MODAL VIEW GET MORE
-  //RETUERN PROMISE TO CALLER (MEDIAMODAL)
-  const loadMoreItems = async () => {
+  //RETUERN PROMISE SO CALLER (MEDIAMODAL) can awaited
+  const loadMoreModalItems = async () => {
     return new Promise((resolve) => {
       setPage((p) => p + 1);
       // Wait for next fetchAllMedia to complete
@@ -199,7 +199,7 @@ export default function All() {
         currentIndex={selectedIndex}
         setCurrentIndex={setSelectedIndex}
         onClose={() => setSelectedIndex(null)}
-        loadMoreItems={loadMoreItems}
+        loadMoreItems={loadMoreModalItems}
         hasMore={hasMore}
         refreshMediaAfterDelete={handelRefreshMedia}
         updateMediaItem={updateMediaItem}
