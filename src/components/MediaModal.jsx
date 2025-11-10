@@ -18,6 +18,7 @@ export default function MediaModal({
   currentIndex,
   setCurrentIndex,
   onClose,
+  //function to update allgalery item when item deleted
   refreshMediaAfterDelete,
   //function to update allgalery item when video ready to stream
   updateMediaItem,
@@ -171,7 +172,7 @@ export default function MediaModal({
     }
   };
 
-  //BECAUSE mODAL IS NOT PAGE WE MUST SINCHRONIZE STATE ON CHANGE
+  //BECAUSE mODAL IS NOT PAGE WE MUST SINCHRONIZE LOCAL STATE ON CHANGE
   //The issue is that useState only uses the initial value once, when the component mounts.
   //So if the first opened media had readyToStream = true,
   //and you open another one where it’s false, your isReady will still be true — stuck with stale state.
@@ -189,7 +190,7 @@ export default function MediaModal({
   }, [currentIndex]);
 
   //POLL EVERY 10S FOR VIDEO TO CHECK IF VIDEO IS READY TO STREAM.
-  //FOR VIDEO TO BE READY TO STREAM MUST BE:
+  //FOR VIDEO TO BE READY TO STREAM, MUST BE:
   //1. CLOUDFLARE MUST SET FLAG readyToStream TO TRUE
   //2. CDN NETWORK MUST POBAGATE CONTEN
   useEffect(() => {
@@ -233,11 +234,11 @@ export default function MediaModal({
     return () => clearInterval(interval);
   }, [currentIndex, mediaInfo?._id, setCurrentIndex]);
 
-  // 🛑 Guard AFTER hooks, in render
-  if (!mediaInfo) return null;
-
   //DISABLE SCROLER U DESNO AKO NEMA VISE CONTENTA
   const isDisabled = currentIndex >= allMedia.length - 1;
+
+  // 🛑 Guard AFTER hooks, in render
+  if (!mediaInfo) return null;
 
   return (
     <div

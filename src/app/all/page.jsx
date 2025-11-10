@@ -110,7 +110,7 @@ export default function All() {
   };
 
   //AFTER MODAL THROUHG 10S INTERVAL DETECT VIDEO IS READY TO STREAM
-  //UPDATE ALL GALLERY
+  //UPDATE THAT ITEM IN ALL GALLERY
   const updateMediaItem = (id, updatedFields) => {
     setAllMedia((prev) =>
       prev.map((item) =>

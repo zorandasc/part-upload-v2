@@ -11,9 +11,9 @@ import { getImageUrl, getVideoThumbnail } from "@/lib/helper";
 //lastImageRef is a React ref callback attached to the last image element in the gallery.
 export default function MediaGallery({
   allMedia,
-  refreshMediaAfterDelete,
   loading,
   lastMediaRef,
+  refreshMediaAfterDelete,
   updateMediaItem,
 }) {
   const [selectedIndex, setSelectedIndex] = useState(null);
