@@ -1,8 +1,13 @@
 "use client";
 
+import styles from "./page.module.css";
 import { useState, useEffect, useRef, useCallback } from "react";
+import { TbPlayerPlayFilled } from "react-icons/tb";
+import { MdOutlineNoPhotography } from "react-icons/md";
+import Image from "next/image";
 import { useLikedContext } from "@/context/LikedContext";
-import MediaGallery from "@/components/MediaGallery";
+import { getImageUrl, getVideoThumbnail } from "@/lib/helper";
+import MediaModal from "@/components/MediaModal";
 import UploadButton from "@/components/UploadButton";
 import UploadModal from "@/components/UploadModal";
 import Spinner from "@/components/Spinner";
@@ -12,6 +17,7 @@ export default function All() {
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
+  const [selectedIndex, setSelectedIndex] = useState(null);
   const [hasMore, setHasMore] = useState(true);
 
   const [isModalOpen, setModalOpen] = useState(false);
@@ -122,13 +128,62 @@ export default function All() {
   return (
     <>
       {loading && <Spinner />}
-      <MediaGallery
+      <section className={styles.uploadedImages}>
+        {!loading && allMedia?.length === 0 && (
+          <div className={styles.noContent}>
+            <MdOutlineNoPhotography />
+            Nema sadržaja.
+          </div>
+        )}
+        {allMedia?.map((item, i) => {
+          const isLast = i === allMedia.length - 1; //determin last media file so we can attach observer
+          return (
+            <div
+              key={i}
+              className={styles.imageContainer}
+              style={{ animationDelay: `${i * 0.1}s` }}
+              onClick={() => setSelectedIndex(i)}
+              ref={isLast ? lastMediaRef : null} // attach observer on last media file
+            >
+              {item.contentType === "video" ? (
+                <>
+                  <Image
+                    priority
+                    src={getVideoThumbnail(item.mediaId)}
+                    onError={(e) => {
+                      e.currentTarget.src = "/logo.png";
+                    }}
+                    alt={item.name || "Video thumbnail"}
+                    fill
+                    className={styles.image}
+                    sizes="100%"
+                  />
+                  <div className={styles.videoBadge}>
+                    <TbPlayerPlayFilled />
+                  </div>
+                </>
+              ) : (
+                <Image
+                  priority
+                  src={getImageUrl(item.mediaId)}
+                  alt={item.name || "Image"}
+                  fill
+                  className={styles.image}
+                  sizes="100%"
+                />
+              )}
+            </div>
+          );
+        })}
+      </section>
+      <MediaModal
         allMedia={allMedia}
+        currentIndex={selectedIndex}
+        setCurrentIndex={setSelectedIndex}
+        onClose={() => setSelectedIndex(null)}
         refreshMediaAfterDelete={handelRefreshMedia}
-        loading={loading}
-        lastMediaRef={lastMediaRef}
         updateMediaItem={updateMediaItem}
-      />
+      ></MediaModal>
       <UploadButton
         handleClick={() => setModalOpen(true)}
         totalCount={totalCount}
