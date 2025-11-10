@@ -18,6 +18,8 @@ export default function MediaModal({
   currentIndex,
   setCurrentIndex,
   onClose,
+  loadMoreItems,
+  hasMore,
   //function to update allgalery item when item deleted
   refreshMediaAfterDelete,
   //function to update allgalery item when video ready to stream
@@ -39,8 +41,6 @@ export default function MediaModal({
 
   //IS UPLOADED VIDEO READY TO STREAM
   const [isReady, setIsReady] = useState(mediaInfo?.readyToStream || false);
-
-  const [showTooltip, setShowTooltip] = useState(false);
 
   const touchStartX = useRef(null);
 
@@ -64,6 +64,15 @@ export default function MediaModal({
       setCurrentIndex(currentIndex - 1);
     } else if (e.key === "Escape") {
       onClose();
+    }
+  };
+
+  const handleNextItem = async () => {
+    if (currentIndex < allMedia.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    } else if (hasMore) {
+      await loadMoreItems();
+      setCurrentIndex((prev) => prev + 1);
     }
   };
 
@@ -234,9 +243,6 @@ export default function MediaModal({
     return () => clearInterval(interval);
   }, [currentIndex, mediaInfo?._id, setCurrentIndex]);
 
-  //DISABLE SCROLER U DESNO AKO NEMA VISE CONTENTA
-  const isDisabled = currentIndex >= allMedia.length - 1;
-
   // 🛑 Guard AFTER hooks, in render
   if (!mediaInfo) return null;
 
@@ -293,24 +299,12 @@ export default function MediaModal({
 
         <button
           className={styles.rightArrow}
-          disabled={isDisabled}
-          onClick={() =>
-            setCurrentIndex((prev) => Math.min(prev + 1, allMedia.length - 1))
-          }
-          onTouchStart={() => isDisabled && setShowTooltip(true)}
-          onTouchEnd={() => setShowTooltip(false)}
-          title={
-            currentIndex >= allMedia.length - 1
-              ? "Scroll the gallery to load more items"
-              : "Next"
-          }
+          disabled={currentIndex >= allMedia.length - 1 && !hasMore}
+          onClick={handleNextItem}
         >
           <MdOutlineKeyboardDoubleArrowRight />
         </button>
 
-        {isDisabled && showTooltip && (
-          <div className={styles.tooltip}>Dobavite još stavki iz galerije.</div>
-        )}
         <div className={styles.imageInfo}>
           <div className={styles.generalije}>
             <span className={styles.user}>{mediaInfo.userId}</span>

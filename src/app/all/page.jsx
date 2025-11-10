@@ -84,13 +84,23 @@ export default function All() {
     }
   }, [page]);
 
-  useEffect(() => {
-    fetchAllMedia();
-  }, [fetchAllMedia]);
-
-  useEffect(() => {
-    if (page === 1) window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [allMedia]);
+  //WHEN SCROLING TO END OF PAGE IN MODAL VIEW GET MORE
+  //RETUERN PROMISE TO CALLER (MEDIAMODAL)
+  const loadMoreItems = async () => {
+    return new Promise((resolve) => {
+      setPage((p) => p + 1);
+      // Wait for next fetchAllMedia to complete
+      //odnsono da loading bude false
+      const interval = setInterval(() => {
+        if (!loading) {
+          clearInterval(interval);
+          resolve();
+        }
+      }, 200);
+      // safety stop
+      setTimeout(() => clearInterval(interval), 5000);
+    });
+  };
 
   // Handler called when UploadModal is closed after upload
   const handleModalClose = (didUpload = false) => {
@@ -115,7 +125,7 @@ export default function All() {
     fetchAllMedia();
   };
 
-  //AFTER MODAL THROUHG 10S INTERVAL DETECT VIDEO IS READY TO STREAM
+  //AFTER MODAL INTERVAL DETECT VIDEO IS READY TO STREAM
   //UPDATE THAT ITEM IN ALL GALLERY
   const updateMediaItem = (id, updatedFields) => {
     setAllMedia((prev) =>
@@ -124,6 +134,14 @@ export default function All() {
       )
     );
   };
+
+  useEffect(() => {
+    fetchAllMedia();
+  }, [fetchAllMedia]);
+
+  useEffect(() => {
+    if (page === 1) window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [allMedia]);
 
   return (
     <>
@@ -181,6 +199,8 @@ export default function All() {
         currentIndex={selectedIndex}
         setCurrentIndex={setSelectedIndex}
         onClose={() => setSelectedIndex(null)}
+        loadMoreItems={loadMoreItems}
+        hasMore={hasMore}
         refreshMediaAfterDelete={handelRefreshMedia}
         updateMediaItem={updateMediaItem}
       ></MediaModal>
