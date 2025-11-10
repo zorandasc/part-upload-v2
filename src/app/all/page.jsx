@@ -33,6 +33,7 @@ export default function All() {
     (node) => {
       //While allMedia are currently being loaded, we don’t want to trigger another page load.
       //Stops the observer from being set up while a fetch is in progress.
+      //prevents double loading.
       if (loading || !hasMore) return;
       //observer.current stores the previous IntersectionObserver instance.
       //disconnect() removes it from the previously observed element.
@@ -46,6 +47,7 @@ export default function All() {
       If it’s visible and there are more allMedia (hasMore), we increment page to fetch the next set of allMedia.*/
       observer.current = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting && hasMore) {
+          //this automatically triggers your useEffect(fetchAllMedia)
           setPage((prev) => prev + 1);
         }
       });
@@ -100,7 +102,7 @@ export default function All() {
           resolve();
         }
       }, 200);
-      // safety stop
+      // safety stop, prevents infinite waiting
       setTimeout(() => clearInterval(interval), 5000);
     });
   };
