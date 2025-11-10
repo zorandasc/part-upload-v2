@@ -42,6 +42,9 @@ export default function MediaGallery({
                   <Image
                     priority
                     src={getVideoThumbnail(item.mediaId)}
+                    onError={(e) => {
+                      e.currentTarget.src = "./logo.png";
+                    }}
                     alt={item.name || "Video thumbnail"}
                     fill
                     className={styles.image}

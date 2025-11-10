@@ -332,11 +332,16 @@ export default function MediaModal({
               className={styles.closeButton}
               aria-label="Download Media"
               onClick={handleDownload}
+              disabled={!isReady}
+              title={
+                isReady ? "Download video" : "Video is still processing..."
+              }
             >
               <AiOutlineDownload />
             </button>
             <button
               className={styles.closeButton}
+              disabled={!isReady}
               onClick={() => handleLiked(mediaInfo)}
               aria-label="Like Media"
             >
