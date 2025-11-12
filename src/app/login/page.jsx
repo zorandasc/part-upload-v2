@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
+import { toast } from "react-hot-toast";
 import { useUserContext } from "@/context/UserContext";
 
 export default function LoginPage() {
@@ -28,8 +29,14 @@ export default function LoginPage() {
 
       if (!res.ok) {
         setError(data.error || "Login failed");
+        toast.error(data.error || "Login failed", {
+          position: "top-right",
+        });
         return;
       }
+      toast.success("Uspješno ste logovani", {
+        position: "top-right",
+      });
       setUser(data.user);
       router.push("/");
     } catch (err) {
@@ -57,7 +64,7 @@ export default function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
             required
           ></input>
-          <p>{error}</p>
+
           <button type="submit" className={styles.loginButton}>
             Login
           </button>

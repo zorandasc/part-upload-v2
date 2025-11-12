@@ -1,9 +1,10 @@
 "use client";
 
+import styles from "./uploadModal.module.css";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import * as tus from "tus-js-client"; // ✅ import tus
-import styles from "./uploadModal.module.css";
+import { toast } from "react-hot-toast";
 import { FaCirclePlus } from "react-icons/fa6";
 
 export default function UploadModal({ isOpen, onClose }) {
@@ -108,6 +109,10 @@ export default function UploadModal({ isOpen, onClose }) {
           // 3. Save UID to DB
           await saveToDb(uid, "video");
 
+          toast.success("Video je uspješno poslan.🎉", {
+            position: "top-right",
+          });
+
           setUploading(false);
 
           onClose(true);
@@ -158,6 +163,10 @@ export default function UploadModal({ isOpen, onClose }) {
 
       // 3. Save UID to DB
       await saveToDb(id, "image");
+
+      toast.success("Slika je uspješno poslana.🎉", {
+        position: "top-right",
+      });
     } catch (err) {
       console.error("Upload error:", err);
     } finally {

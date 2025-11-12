@@ -1,5 +1,7 @@
 import { Geist, Geist_Mono, Great_Vibes } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "react-hot-toast";
+
 import Navbar from "@/components/Navbar";
 import { UserProvider } from "@/context/UserContext";
 import { LikedProvider } from "@/context/LikedContext";
@@ -35,6 +37,7 @@ export default function RootLayout({ children }) {
           <LikedProvider>
             <Navbar></Navbar>
             {children}
+            <Toaster></Toaster>
           </LikedProvider>
         </UserProvider>
       </body>
