@@ -109,9 +109,7 @@ export default function UploadModal({ isOpen, onClose }) {
           // 3. Save UID to DB
           await saveToDb(uid, "video");
 
-          toast.success("Video je uspješno poslan.🎉", {
-            position: "top-right",
-          });
+          toast.success("Video je uspješno poslan.🎉");
 
           setUploading(false);
 
@@ -127,12 +125,12 @@ export default function UploadModal({ isOpen, onClose }) {
     }
   };
 
-  //1. ASK NEXT.JS BACKEND FOR UPLOAD URL
+  //1. FRONTEND ASK NEXT.JS BACKEND FOR UPLOAD URL
   //2. NEXT.JS BACKEND ASK CLOUDFLARE FOR URL
   //3. NEXT.JS BACKEND SEND UPLOAD URL TO FRONTEND
   //4. FRONTEND MAKE DIRECT UPLOAD OF IMAGE
   //   WITHOUT BACKEND.
-  //5. SEND URL TO NEXT.JS BACKEND TO SAVE URL TO MONGODB
+  //5. SAVE UID to DB VIA NEXT.JS BACKEND
   const handleImageUpload = async () => {
     setUploading(true);
     try {
@@ -164,9 +162,7 @@ export default function UploadModal({ isOpen, onClose }) {
       // 3. Save UID to DB
       await saveToDb(id, "image");
 
-      toast.success("Slika je uspješno poslana.🎉", {
-        position: "top-right",
-      });
+      toast.success("Slika je uspješno poslana.🎉");
     } catch (err) {
       console.error("Upload error:", err);
     } finally {

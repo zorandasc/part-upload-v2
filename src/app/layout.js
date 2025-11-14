@@ -37,7 +37,16 @@ export default function RootLayout({ children }) {
           <LikedProvider>
             <Navbar></Navbar>
             {children}
-            <Toaster></Toaster>
+            <Toaster
+              position="top-center"
+              toastOptions={{
+                style: {
+                  background: "rgb(230 228 221 / 70%)",
+                  backdropFilter: "blur(15px)",
+                  color: "222",
+                },
+              }}
+            ></Toaster>
           </LikedProvider>
         </UserProvider>
       </body>

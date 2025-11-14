@@ -2,6 +2,8 @@
 import styles from "./mediaModal.module.css";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { toast } from "react-hot-toast";
+
 import { useUserContext } from "@/context/UserContext";
 import { useLikedContext } from "@/context/LikedContext";
 import { FaTimesCircle, FaRegHeart, FaHeart } from "react-icons/fa";
@@ -149,6 +151,8 @@ export default function MediaModal({
       }
       console.log("✅ Media deleted successfully");
 
+      toast.success("Sadržaj obrisan.");
+
       // ✅ re-fetch (REFRESH) parent befor MODAL close
       await refreshMediaAfterDelete(mediaInfo);
 
@@ -162,12 +166,12 @@ export default function MediaModal({
   //BECAUSE mODAL IS NOT PAGE WE MUST SINCHRONIZE LOCAL STATE ON CHANGE
   //The issue is that useState only uses the initial value once, when the component mounts.
   //So if the first opened media had readyToStream = true,
-  //and you open another one where it’s false, your isReady 
+  //and you open another one where it’s false, your isReady
   // will still be true — stuck with stale state.
   //SO, ✅ Sync local state whenever mediaInfo changes
   useEffect(() => {
     if (!mediaInfo) return;
-    //The !! (double negation operator) is used to guarantee 
+    //The !! (double negation operator) is used to guarantee
     // the value is a strict boolean
     setIsReady(!!mediaInfo.readyToStream);
   }, [mediaInfo?._id, mediaInfo?.readyToStream]);
@@ -317,7 +321,13 @@ export default function MediaModal({
             <button
               className={styles.closeButton}
               disabled={!isReady}
-              onClick={() => handleLiked(mediaInfo)}
+              onClick={() => {
+                liked
+                  ? toast.success("Sadržaj ukinut iz sviđanja.")
+                  : toast.success("Sadržaj se sviđa.");
+
+                handleLiked(mediaInfo);
+              }}
               aria-label="Like Media"
             >
               {liked ? <FaHeart /> : <FaRegHeart />}

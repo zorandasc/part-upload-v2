@@ -29,14 +29,10 @@ export default function LoginPage() {
 
       if (!res.ok) {
         setError(data.error || "Login failed");
-        toast.error(data.error || "Login failed", {
-          position: "top-right",
-        });
+        toast.error(data.error || "Login failed");
         return;
       }
-      toast.success("Uspješno ste logovani", {
-        position: "top-right",
-      });
+      toast.success("Uspješno ste logovani");
       setUser(data.user);
       router.push("/");
     } catch (err) {
