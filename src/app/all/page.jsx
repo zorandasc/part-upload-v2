@@ -61,12 +61,6 @@ export default function All() {
     [loading, hasMore]
   );
 
-  useEffect(() => {
-    return () => {
-      if (observer.current) observer.current.disconnect();
-    };
-  }, []);
-
   //useCallback to stabilize it and avoid unnecessary effect triggers:
   const fetchAllMedia = useCallback(async () => {
     setLoading(true);
@@ -93,12 +87,14 @@ export default function All() {
   const loadMoreModalItems = async () => {
     return new Promise((resolve) => {
       //SET NEXT PAGE
+      //this will triger useEffect(fetchAllMedia)
       setPage((p) => p + 1);
-      //BUT Wait for next fetchAllMedia to complete
-      //odnsono da loading bude false
+      //BUT Wait for loading da bude false
+      //odnsono da fetchAllMedia to complete
       const interval = setInterval(() => {
         if (!loading) {
           clearInterval(interval);
+          //then resolve
           resolve();
         }
       }, 200);
@@ -134,6 +130,8 @@ export default function All() {
 
   //AFTER MODAL INTERVAL DETECT VIDEO IS READY TO STREAM
   //UPDATE THAT ITEM IN ALL GALLERY
+  //JER KAD MODAL DETEKTUJE DA VIDEO READY BAZA CE BITI UPDEJTOVANA
+  //ALI LOKALNO STANJE NECE JER NEMA REFRESHA, MODAL JE DIO ALL-PAGE.
   const updateMediaItem = (id, updatedFields) => {
     setAllMedia((prev) =>
       prev.map((item) =>
@@ -141,6 +139,12 @@ export default function All() {
       )
     );
   };
+
+  useEffect(() => {
+    return () => {
+      if (observer.current) observer.current.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     fetchAllMedia();

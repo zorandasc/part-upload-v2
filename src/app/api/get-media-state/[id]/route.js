@@ -1,11 +1,11 @@
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { NextResponse } from "next/server";
-import { getVideoUrl } from "@/lib/helper";
 
 const CF_ACCOUNT_ID = process.env.CF_ACCOUNT_ID;
 const CF_STREAM_TOKEN = process.env.CF_STREAM_TOKEN;
 
+//HELPER FUCNTION
 /*CLOUDFLAR Stream must upload and encode the video, 
 which can take a few seconds to a few minutes depending on the length of your video.
 When the readyToStream value returns true, your video is ready for streaming. 
@@ -38,6 +38,7 @@ export const getCloudflareVideoStatus = async (mediaId) => {
   };
 };
 
+//HELPER FUCNTION
 //TRY TO ENABLE VIDEO TO BE DOWNLOABLE AS .MP4
 //this is done only once per video
 export const enableCloudflareVideoDownload = async (mediaId) => {
@@ -62,7 +63,7 @@ export const enableCloudflareVideoDownload = async (mediaId) => {
   */
 };
 
-//CALLED BY MEDIAMODAL, TO CHECK IF VIDEO IS READY TO STREAM
+//API POINT CALLED BY MEDIAMODAL, TO CHECK IF VIDEO IS READY TO STREAM
 /**
  * Check if video is ready to stream — called from frontend polling.
  * THE VIDEO IS READY TO STREM IF:
@@ -95,33 +96,30 @@ export async function GET(req, context) {
 
       if (cfStatus.readyToStream && cfStatus.status === "ready") {
         //2. Before marking ready, probe CDN availability
-        const videoUrl = getVideoUrl(mediaInDb.mediaId);
+        // CHANGED: Probe the HLS manifest, not the iframe HTML
+        // The manifest is the source of truth for playback
+        const manifestUrl = `https://videodelivery.net/${mediaInDb.mediaId}/manifest/video.m3u8`;
         try {
-          const probe = await fetch(videoUrl, { method: "HEAD" });
+          const probe = await fetch(manifestUrl, { method: "HEAD" });
           if (probe.ok) {
             console.log("probe.ok", probe.ok);
             //if BOTH CLOUDFLARE AND CDN NETWORK true
-            //THEN UPDTE IN DB AND RESPONSE
-
-            //Sometimes the CDN is slow to replicate, even after a 200.
-            //so you can add small delay
-            //await new Promise((r) => setTimeout(r, 10000)); // wait 10s
+            //THEN UPDTE IN DB AND RESPONSe
 
             //TRY TO ENABLE VIDOE TO BE DOWLOADABLE
             await enableCloudflareVideoDownload(mediaInDb.mediaId);
 
-            await db
-              .collection("media")
-              .updateOne(
-                { _id: mediaInDb._id },
-                {
-                  $set: {
-                    readyToStream: true,
-                    status: cfStatus.status,
-                    allowDownload: true,
-                  },
-                }
-              );
+            //UPDATE MONGO DB
+            await db.collection("media").updateOne(
+              { _id: mediaInDb._id },
+              {
+                $set: {
+                  readyToStream: true,
+                  status: cfStatus.status,
+                  allowDownload: true,
+                },
+              }
+            );
 
             // also update in the response
             mediaInDb.readyToStream = true;

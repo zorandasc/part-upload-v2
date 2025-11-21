@@ -173,6 +173,7 @@ export default function MediaModal({
     if (!mediaInfo) return;
     //The !! (double negation operator) is used to guarantee
     // the value is a strict boolean
+    //RRADY FLAG POKUPI OD MEDIAINFO NA SVAKOJ PROMJENI MODALA MEDIAINFO
     setIsReady(!!mediaInfo.readyToStream);
   }, [mediaInfo?._id, mediaInfo?.readyToStream]);
 
@@ -248,8 +249,16 @@ export default function MediaModal({
           {mediaInfo.contentType === "video" ? (
             isReady ? (
               <iframe
-                key={isReady ? "ready" : "processing"} // Force re-render when ready
-                src={isReady ? getVideoUrl(mediaInfo.mediaId) : undefined}
+                // 1. Key forces a hard reset if mediaId changes OR when isReady flips
+                key={isReady ? `${mediaInfo.mediaId}-ready` : "processing"} // Force re-render when ready
+                // 2. Append timestamp to bypass browser cache of previous 404s
+                src={
+                  isReady
+                    ? `${getVideoUrl(
+                        mediaInfo.mediaId
+                      )}?preload=true&ts=${Date.now()}`
+                    : undefined
+                }
                 className={styles.modalVideo}
                 allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
                 allowFullScreen
