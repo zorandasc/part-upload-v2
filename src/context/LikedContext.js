@@ -32,7 +32,7 @@ export function LikedProvider({ children }) {
       if (isLiked) {
         return prev.filter((m) => m._id !== mediaInfo._id);
       } else {
-        return [...prev, mediaInfo];
+        return [mediaInfo, ...prev];
       }
     });
   };
