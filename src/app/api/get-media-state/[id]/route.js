@@ -99,10 +99,13 @@ export async function GET(req, context) {
         // CHANGED: Probe the HLS manifest, not the iframe HTML
         // The manifest is the source of truth for playback
         const manifestUrl = `https://videodelivery.net/${mediaInDb.mediaId}/manifest/video.m3u8`;
+
         try {
+          // 2. Probe
           const probe = await fetch(manifestUrl, { method: "HEAD" });
+
           if (probe.ok) {
-            console.log("probe.ok", probe.ok);
+            console.log("✅ CDN fully propagated (Video + Thumb)");
             //if BOTH CLOUDFLARE AND CDN NETWORK true
             //THEN UPDTE IN DB AND RESPONSe
 
