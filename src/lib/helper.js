@@ -38,3 +38,9 @@ export const getVideoUrl = (mediaId) =>
 //TO DOWNLOAD VIDEO AS MP4
 export const getVideoDownloadUrl = (mediaId) =>
   `https://customer-a2dln967kq1b7opm.cloudflarestream.com/${mediaId}/downloads/default.mp4`;
+
+export const getVideoBlurThumb = (id) =>
+  `https://videodelivery.net/${id}/thumbnails/thumbnail.webp?width=40&quality=1`;
+
+export const getImageBlurThumb = (mediaId) =>
+  `https://videodelivery.net/${mediaId}/thumbnails/thumbnail.webp?width=40&quality=10`;

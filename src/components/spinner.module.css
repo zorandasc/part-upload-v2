@@ -1,19 +1,45 @@
-.spinnerContainer {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 999;
-}
-
+/* 1. The Visual Circle (Shared by both) */
 .spinner {
-  width: 70px;
-  height: 70px;
-  border: 8px solid #6f6959;
-  border-top: 8px solid #ffdd82;
+  border: 5px solid #6f6959; /* Reduced thickness for elegance */
+  border-top: 5px solid #ffdd82;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   background-color: transparent;
+}
+
+/* 2. Mode A: Full Screen Overlay (Initial Load) */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  background-color: rgba(255, 255, 255, 0.5); /* Optional: dims the background */
+}
+
+/* 3. Mode B: Inline Block (Load More) */
+.inline {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 20px 0;
+}
+
+/* Sizes */
+.large {
+  width: 70px;
+  height: 70px;
+}
+
+.small {
+  width: 40px;
+  height: 40px;
+  border-width: 4px; /* Thinner border for small version */
 }
 
 @keyframes spin {

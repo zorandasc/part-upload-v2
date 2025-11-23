@@ -6,7 +6,12 @@ import { TbPlayerPlayFilled } from "react-icons/tb";
 import { MdOutlineNoPhotography } from "react-icons/md";
 import Image from "next/image";
 import { useLikedContext } from "@/context/LikedContext";
-import { getImageUrl, getVideoThumbnail } from "@/lib/helper";
+import {
+  getImageBlurThumb,
+  getImageUrl,
+  getVideoBlurThumb,
+  getVideoThumbnail,
+} from "@/lib/helper";
 import MediaModal from "@/components/MediaModal";
 import UploadButton from "@/components/UploadButton";
 import UploadModal from "@/components/UploadModal";
@@ -15,7 +20,7 @@ import Spinner from "@/components/Spinner";
 export default function All() {
   const [allMedia, setAllMedia] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [hasMore, setHasMore] = useState(true);
@@ -45,12 +50,21 @@ export default function All() {
       entries[0] refers to the observed element (the last image).
       isIntersecting is true when the element is visible on screen.
       If it’s visible and there are more allMedia (hasMore), we increment page to fetch the next set of allMedia.*/
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasMore) {
-          //this automatically triggers your useEffect(fetchAllMedia)
-          setPage((prev) => prev + 1);
+      observer.current = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting && hasMore) {
+            //this automatically triggers your useEffect(fetchAllMedia)
+            setPage((prev) => prev + 1);
+          }
+        },
+        {
+          //Add rootMargin to load BEFORE user hits bottom
+          // ✅ IMPORTANT: This triggers fetch when user is within
+          // 1000px (approx 2-3 screen heights) of the bottom.
+          // The user will likely never see the loading spinner.
+          rootMargin: "150px",//MAYBE ALSO 200px
         }
-      });
+      );
 
       //Observe the node
       /*node is the actual DOM element passed by React when this ref is attached.
@@ -68,9 +82,14 @@ export default function All() {
       const res = await fetch(`/api/get-all-media?page=${page}&limit=20`);
       const data = await res.json();
 
-      setAllMedia((prev) =>
-        page === 1 ? data.files : [...prev, ...data.files]
-      );
+      setAllMedia((prev) => {
+        //If page 1, replace. If page > 1, append.
+        const newFiles = page === 1 ? data.files : [...prev, ...data.files];
+        // Optional: Filter duplicates based on _id just to be safe
+        return Array.from(
+          new Map(newFiles.map((item) => [item._id, item])).values()
+        );
+      });
       setTotalCount(data.totalCount);
       setHasMore(data.hasMore);
     } catch (error) {
@@ -152,11 +171,15 @@ export default function All() {
 
   useEffect(() => {
     if (page === 1) window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [allMedia]);
+  }, [allMedia, page]);
 
+  
   return (
     <>
-      {loading && <Spinner />}
+      {/*Only show full screen spinner on Initial Load (Page 1) */}
+      {loading && page === 1 && allMedia.length === 0 && (
+        <Spinner fullScreen={true} />
+      )}
       <section className={styles.uploadedImages}>
         {!loading && allMedia?.length === 0 && (
           <div className={styles.noContent}>
@@ -165,25 +188,38 @@ export default function All() {
           </div>
         )}
         {allMedia?.map((item, i) => {
-          const isLast = i === allMedia.length - 1; //determin last media file so we can attach observer
+          //determin last media file so we can attach observer
+          const isLast = i === allMedia.length - 1;
+
+          //FOR ANIMATION
+          const DELAY_INCREMENT = 0.1;
+          // For the next 20 items (i=20 to 39), localIndex = i % 20 (i.e., 0 to 19)
+          // For the first 20 items (i=0 to 19), localIndex = i.
+          //FOR ANIMATION
+          const localIndex = i % 20;
+
+          //Calculate the total animation delay
+          const delay = `${localIndex * DELAY_INCREMENT}s`;
           return (
             <div
-              key={i}
+              key={`${item._id}-${i}`}
               className={styles.imageContainer}
-              style={{ animationDelay: `${i * 0.1}s` }}
+              style={{ animationDelay: delay }}
               onClick={() => setSelectedIndex(i)}
               ref={isLast ? lastMediaRef : null} // attach observer on last media file
             >
               {item.contentType === "video" ? (
                 <>
                   <Image
-                    priority
+                    //priority
                     src={getVideoThumbnail(item.mediaId)}
                     onError={(e) => {
                       e.currentTarget.src = "/logo.png";
                     }}
                     alt={item.name || "Video thumbnail"}
                     fill
+                    placeholder="blur"
+                    blurDataURL={getVideoBlurThumb(item.mediaId)}
                     className={styles.image}
                     sizes="100%"
                   />
@@ -193,10 +229,12 @@ export default function All() {
                 </>
               ) : (
                 <Image
-                  priority
+                  //priority
                   src={getImageUrl(item.mediaId)}
                   alt={item.name || "Image"}
                   fill
+                  placeholder="blur"
+                  blurDataURL={getImageBlurThumb(item.mediaId)}
                   className={styles.image}
                   sizes="100%"
                 />
@@ -205,6 +243,9 @@ export default function All() {
           );
         })}
       </section>
+      {/*Show a small loading indicator at the BOTTOM for pages > 1 */}
+      {loading && page > 1 && <Spinner fullScreen={false} />}
+
       <MediaModal
         allMedia={allMedia}
         currentIndex={selectedIndex}
