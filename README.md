@@ -1,5 +1,3 @@
-TOD DO
-2.DOWNLOAD 3. DOES IT NEED TO CLEAN OBSERVER 5. HOME PAGE PICTURES 4. UPLOAD VIDEO MALO STEKA
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
