@@ -10,12 +10,12 @@ export default function Navbar() {
   const pathname = usePathname();
   return (
     <nav className={`${styles.nav} ${pathname != "/" ? styles.bcg : ""}`}>
-      <div className={styles.logoContainer}>
+      <Link href="/" className={styles.logoContainer}>
         <img src="./logo.png" alt="Wedding" className={styles.logo} />{" "}
         <p className={styles.logoName}>
           Party<span>UP</span>
         </p>
-      </div>
+      </Link>
       {pathname != "/" && (
         <Link href="/" className={styles.arrowBack}>
           <FaCircleArrowRight />
