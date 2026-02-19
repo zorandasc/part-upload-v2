@@ -301,3 +301,32 @@ IN ALLGAALLERY PAGE.JSX:
     });
   };
 ```
+
+# INTESECTION OBSERVER:
+
+How it all fits together:
+The Trigger: As the user scrolls, the node (the last div) enters the viewport.
+
+The Detection: The observer.current (the watcher) notices this movement.
+
+The Callback: It generates an entry that says isIntersecting: true.
+
+The Action: Your code sees that entry, increments the page number, and triggers a new fetch.
+
+The Refresh: Once new items load, the ref moves to the new last item, the old observer is disconnected, and a new one starts watching the new node.
+
+
+# Is then true that entries[0] is passed node element?
+
+Gemini said
+Not exactly. It’s a common point of confusion: entries[0] is not the node itself, but rather a report object that contains information about that node.
+
+Think of the node as a house and entries[0] as a status report from a security guard watching that house. The report tells you if someone is inside, but the report is not the house.
+
+The Breakdown
+Term	What it actually is	Key Property
+node	The actual HTML element (<div>)	node.style, node.id, etc.
+entries[0]	An IntersectionObserverEntry object	isIntersecting, intersectionRatio
+
+Why is it an array (entries[0])?
+The reason it’s an array is that a single IntersectionObserver can be told to watch multiple elements at once (e.g., observer.observe(nodeA), observer.observe(nodeB)).

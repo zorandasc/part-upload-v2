@@ -1,8 +1,9 @@
 import clientPromise from "@/lib/mongodb";
 import { NextResponse } from "next/server";
 
-//CREATE AND SAVE NEW JSON OBJECT WITH GENERATED URL FROM CLODFLAER
-//THE IMAGE OR VIDEO HAVE DIRECT UPLOAD FROM FRONTEND
+//CREATE AND SAVE NEW JSON OBJECT TO MONGO DB
+// WITH GENERATED URL FOR EVERY MEDIA FROM CLODFLAER
+//THE IMAGE OR VIDEO HAVE DIRECT UPLOADED TO CLUDFLARE FROM FRONTEND
 export async function POST(req) {
   try {
     const data = await req.json();
@@ -11,7 +12,7 @@ export async function POST(req) {
     if (!data.mediaId || !data.contentType) {
       return NextResponse.json(
         { error: "mediaId and contentType are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -41,7 +42,7 @@ export async function POST(req) {
     console.error("❌ Error saving content:", error);
     return NextResponse.json(
       { success: false, error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

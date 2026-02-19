@@ -17,12 +17,11 @@ import { getImageUrl, getVideoUrl, getVideoDownloadUrl } from "@/lib/helper";
 
 export default function MediaModal({
   allMedia,
+  hasMore,
   currentIndex,
   setCurrentIndex,
   onClose,
-  loadMoreItems,
-  hasMore,
-  //function to update allgalery item when item deleted
+  loadMoreNextItems,
   refreshMediaAfterDelete,
   //function to update allgalery item when video ready to stream
   updateMediaItem,
@@ -73,7 +72,7 @@ export default function MediaModal({
     if (currentIndex < allMedia.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else if (hasMore) {
-      await loadMoreItems();
+      await loadMoreNextItems();
       setCurrentIndex((prev) => prev + 1);
     }
   };
@@ -149,12 +148,16 @@ export default function MediaModal({
         alert("Failed to delete media. Please try again.");
         return;
       }
-      console.log("✅ Media deleted successfully");
+
+      const liked = isLiked(mediaInfo?._id);
+      if (liked) handleLiked(mediaInfo);
+
+      //console.log("✅ Media deleted successfully");
 
       toast.success("Sadržaj obrisan.");
 
       // ✅ re-fetch (REFRESH) parent befor MODAL close
-      await refreshMediaAfterDelete(mediaInfo);
+      await refreshMediaAfterDelete();
 
       // close modal
       onClose();
@@ -209,7 +212,7 @@ export default function MediaModal({
 
         if (res.ok) {
           const updated = await res.json();
-          console.log("updated.readyToStream", updated.readyToStream);
+          //console.log("updated.readyToStream", updated.readyToStream);
 
           if (updated.readyToStream) {
             //CLOUDFLARE IS READY

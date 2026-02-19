@@ -24,23 +24,35 @@ export default function All() {
   const [page, setPage] = useState(1);
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [hasMore, setHasMore] = useState(true);
-
   const [isModalOpen, setModalOpen] = useState(false);
-
   const { handleLiked, isLiked } = useLikedContext();
 
+  //observer.current It acts as a container. By storing the new IntersectionObserver
+  // inside observer.current, you ensure that you can disconnect the old observer
+  // before creating a new one when the list updates.
   const observer = useRef();
 
   //useCallback memorize the function so it doesnot get recreated on every render
   //which is important because react will attach thi asa a ref to the last image
   //DEPENDENCIE [loadine, hasmore] will update function
+  //WHEN YOU PASS lastMediaRef to the ref prop of the div,
+  // React automatically passes the underlying DOM node as the first
+  //argument to that callback.
+  //THAT NODE WILL BE OBSERVED BY new IntersectionObserver() OBJECT THAT IS
+  //STORED IN CONTAINER observer.current
   const lastMediaRef = useCallback(
+    //node represents the actual HTML element
     (node) => {
       //While allMedia are currently being loaded, we don’t want to trigger another page load.
       //Stops the observer from being set up while a fetch is in progress.
       //prevents double loading.
       if (loading || !hasMore) return;
+
       //observer.current stores the previous IntersectionObserver instance.
+      //observer.current (The Persistent Watcher)
+      //Role: It acts as a container. By storing the new IntersectionObserver
+      //inside observer.current, you ensure that you can disconnect
+      // the old observer before creating a new one when the list updates.
       //disconnect() removes it from the previously observed element.
       //This prevents multiple observers from stacking up, which can cause multiple page increments.
       if (observer.current) observer.current.disconnect();
@@ -48,6 +60,8 @@ export default function All() {
       //Create a new IntersectionObserver
       /*IntersectionObserver watches a DOM element and triggers a callback when it enters or leaves the viewport.
       entries[0] refers to the observed element (the last image).
+      entries (The Report)
+      Each "entry" is an object describing the intersection state of a specific observed element.
       isIntersecting is true when the element is visible on screen.
       If it’s visible and there are more allMedia (hasMore), we increment page to fetch the next set of allMedia.*/
       observer.current = new IntersectionObserver(
@@ -62,17 +76,18 @@ export default function All() {
           // ✅ IMPORTANT: This triggers fetch when user is within
           // 1000px (approx 2-3 screen heights) of the bottom.
           // The user will likely never see the loading spinner.
-          rootMargin: "150px",//MAYBE ALSO 200px
-        }
+          rootMargin: "150px", //MAYBE ALSO 200px
+        },
       );
 
       //Observe the node
       /*node is the actual DOM element passed by React when this ref is attached.
       Only attach the observer if the element exists.
       This is usually the last image in your gallery, so when the user scrolls to it, the callback fires */
+      //new IntersectionObserver().observe(node)
       if (node) observer.current.observe(node);
     },
-    [loading, hasMore]
+    [loading, hasMore],
   );
 
   //useCallback to stabilize it and avoid unnecessary effect triggers:
@@ -87,7 +102,7 @@ export default function All() {
         const newFiles = page === 1 ? data.files : [...prev, ...data.files];
         // Optional: Filter duplicates based on _id just to be safe
         return Array.from(
-          new Map(newFiles.map((item) => [item._id, item])).values()
+          new Map(newFiles.map((item) => [item._id, item])).values(),
         );
       });
       setTotalCount(data.totalCount);
@@ -98,6 +113,22 @@ export default function All() {
       setLoading(false);
     }
   }, [page]);
+
+  // Handler called when UploadModal is closed after upload
+  const handleUploadModalClose =async (didUpload = false) => {
+    setModalOpen(false);
+    if (didUpload) {
+      //OBRISI STARO STANJE
+      setAllMedia([]);
+      if (page === 1) {
+        //AKO SMO VEC NA PAGE 1, ONDA SAMO REFECTH ALL
+        await fetchAllMedia(); // re-fetch explicitly
+      } else {
+        //AKO NISMO VRATI SE NA POCETAK I PKAZI NOVI UNOS NA VRHU
+        setPage(1); // recreate fetchAllMedia and triggers useEffect normally, implicit refetch
+      }
+    }
+  };
 
   //WHEN SCROLING TO THE END OF PAGE IN MODAL VIEW.
   //WE NEED TO GET MORE ITEMS
@@ -122,30 +153,6 @@ export default function All() {
     });
   };
 
-  // Handler called when UploadModal is closed after upload
-  const handleModalClose = (didUpload = false) => {
-    setModalOpen(false);
-    if (didUpload) {
-      //OBRISI STARO STANJE
-      setAllMedia([]);
-      if (page === 1) {
-        //AKO SMO VEC NA PAGE 1, ONDA SAMO REFECTH ALL
-        fetchAllMedia(); // re-fetch explicitly
-      } else {
-        //AKO NISMO VRATI SE NA POCETAK I PKAZI NOVI UNOS NA VRHU
-        setPage(1); // triggers useEffect normally, implicit refetch
-      }
-    }
-  };
-
-  //AFTER MODAL DELETE,
-  //REMOVE FROM LOCALSTORAGE LIKED STORED IN CONTEXT
-  //AND REFETCH ALL
-  const handelRefreshMedia = async (mediaInfo) => {
-    const liked = isLiked(mediaInfo?._id);
-    if (liked) handleLiked(mediaInfo);
-    await fetchAllMedia();
-  };
 
   //AFTER MODAL INTERVAL DETECT VIDEO IS READY TO STREAM
   //UPDATE THAT ITEM IN ALL GALLERY
@@ -154,8 +161,8 @@ export default function All() {
   const updateMediaItem = (id, updatedFields) => {
     setAllMedia((prev) =>
       prev.map((item) =>
-        item._id === id ? { ...item, ...updatedFields } : item
-      )
+        item._id === id ? { ...item, ...updatedFields } : item,
+      ),
     );
   };
 
@@ -165,6 +172,11 @@ export default function All() {
     };
   }, []);
 
+  //In this specific pattern, the useEffect acts as the engine starter.
+  //To Trigger the Initial Load
+  //The useEffect runs immediately on mount, calling fetchAllMedia()
+  // to get the first 20 items. Without this, your screen would stay empty forever.
+  //ALSO IT runs the new fetchAllMedia() ON EACH useCallback(fetchAllMedia CHANGE
   useEffect(() => {
     fetchAllMedia();
   }, [fetchAllMedia]);
@@ -173,7 +185,6 @@ export default function All() {
     if (page === 1) window.scrollTo({ top: 0, behavior: "smooth" });
   }, [allMedia, page]);
 
-  
   return (
     <>
       {/*Only show full screen spinner on Initial Load (Page 1) */}
@@ -248,21 +259,23 @@ export default function All() {
 
       <MediaModal
         allMedia={allMedia}
+        hasMore={hasMore}
         currentIndex={selectedIndex}
         setCurrentIndex={setSelectedIndex}
         onClose={() => setSelectedIndex(null)}
-        loadMoreItems={loadMoreModalItems}
-        hasMore={hasMore}
-        refreshMediaAfterDelete={handelRefreshMedia}
+        loadMoreNextItems={loadMoreModalItems}
+        refreshMediaAfterDelete={fetchAllMedia}
         updateMediaItem={updateMediaItem}
       ></MediaModal>
+
       <UploadButton
         handleClick={() => setModalOpen(true)}
         totalCount={totalCount}
       />
+
       <UploadModal
         isOpen={isModalOpen}
-        onClose={handleModalClose} // Auto-refresh gallery
+        onClose={handleUploadModalClose} // Auto-refresh gallery
       />
     </>
   );

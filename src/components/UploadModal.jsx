@@ -141,7 +141,7 @@ export default function UploadModal({ isOpen, onClose }) {
 
       const { uploadURL, id } = await res.json();
 
-      console.log("uploadurl", uploadURL, "id", id);
+      //console.log("uploadurl", uploadURL, "id", id);
 
       // 2. Upload image file directly to Cloudflare Images
       // without involving my backend
