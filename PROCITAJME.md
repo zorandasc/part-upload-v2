@@ -1,7 +1,10 @@
 # VIDEO NOT FOUND WHEN UPLOAD BUG:
+
 # -------------------------------------------------------------
+
 POLL EVERY 10S FOR VIDEO TO CHECK IF VIDEO IS READY TO STREAM.
 FOR VIDEO TO BE READY TO STREAM, MUST BE:
+
 - CLOUDFLARE MUST SET FLAG readyToStream TO TRUE
 - CDN NETWORK MUST POBAGATE CONTEN
 
@@ -17,51 +20,55 @@ const res = await fetch(`/api/get-media-state/${mediaInfo._id}`);
 IF IT IS READY:
 Tell parent gallery to update that one item
 BECAUSE Modal IS NOT PAGE AND IT CLOSE WILL NOT TRIGER AllGallery refresh
-updateMediaItem(mediaInfo._id, { readyToStream: true });
+updateMediaItem(mediaInfo.\_id, { readyToStream: true });
 
 //AFTER MODAL INTERVAL DETECT VIDEO IS READY TO STREAM
-  //UPDATE THAT ITEM IN ALL GALLERY
-  //JER KAD MODAL DETEKTUJE DA VIDEO READY BAZA CE BITI UPDEJTOVANA
-  //ALI LOKALNO STANJE NECE JER NEMA REFRESHA, MODAL JE DIO ALL-PAGE.
+//UPDATE THAT ITEM IN ALL GALLERY
+//JER KAD MODAL DETEKTUJE DA VIDEO READY BAZA CE BITI UPDEJTOVANA
+//ALI LOKALNO STANJE NECE JER NEMA REFRESHA, MODAL JE DIO ALL-PAGE.
 INSIDE ALLGALERY PAGE:
+
 ```js
- const updateMediaItem = (id, updatedFields) => {
-    setAllMedia((prev) =>
-      prev.map((item) =>
-        item._id === id ? { ...item, ...updatedFields } : item
-      )
-    );
-  };
-  ```
+const updateMediaItem = (id, updatedFields) => {
+  setAllMedia((prev) =>
+    prev.map((item) =>
+      item._id === id ? { ...item, ...updatedFields } : item,
+    ),
+  );
+};
+```
+
 INSIDE api/get-media-state/[id]:
 
- // Only poll Cloudflare if  FALSE in DB,not ready yet,
- ```js
-    if (!mediaInDb.readyToStream) {
-      //1. Get readyToStream FROM CLOUDFLARE
-      const cfStatus = await getCloudflareVideoStatus(mediaInDb.mediaId);
+// Only poll Cloudflare if FALSE in DB,not ready yet,
 
-      console.log("cfStatus.readyToStrea", cfStatus.readyToStream);
+```js
+   if (!mediaInDb.readyToStream) {
+     //1. Get readyToStream FROM CLOUDFLARE
+     const cfStatus = await getCloudflareVideoStatus(mediaInDb.mediaId);
 
-      if (cfStatus.readyToStream && cfStatus.status === "ready") {
-        //2. Before marking ready, probe CDN availability
-        // CHANGED: Probe the HLS manifest, not the iframe HTML
-        // The manifest is the source of truth for playback
-        const manifestUrl = `https://videodelivery.net/${mediaInDb.mediaId}/manifest/video.m3u8`;
-         try {
-          // 2. Probe
-          const probe = await fetch(manifestUrl, { method: "HEAD" });
+     console.log("cfStatus.readyToStrea", cfStatus.readyToStream);
 
-          if (probe.ok) {
-            console.log("✅ CDN fully propagated (Video + Thumb)");
-            //if BOTH CLOUDFLARE AND CDN NETWORK true
-            //THEN UPDTE IN DB AND RESPONSe
+     if (cfStatus.readyToStream && cfStatus.status === "ready") {
+       //2. Before marking ready, probe CDN availability
+       // CHANGED: Probe the HLS manifest, not the iframe HTML
+       // The manifest is the source of truth for playback
+       const manifestUrl = `https://videodelivery.net/${mediaInDb.mediaId}/manifest/video.m3u8`;
+        try {
+         // 2. Probe
+         const probe = await fetch(manifestUrl, { method: "HEAD" });
 
-            //TRY TO ENABLE VIDOE TO BE DOWLOADABLE
-            await enableCloudflareVideoDownload(mediaInDb.mediaId);
+         if (probe.ok) {
+           console.log("✅ CDN fully propagated (Video + Thumb)");
+           //if BOTH CLOUDFLARE AND CDN NETWORK true
+           //THEN UPDTE IN DB AND RESPONSe
+
+           //TRY TO ENABLE VIDOE TO BE DOWLOADABLE
+           await enableCloudflareVideoDownload(mediaInDb.mediaId);
 ```
 
 # INFINITE SCROLL LAG BUG
+
 # --------------------------------------------------------------------------------
 
 Currently, your IntersectionObserver only fires when the user hits the exact pixel of the last element. This forces the user to wait for the network request.
@@ -81,13 +88,18 @@ const lastMediaRef = useCallback(
           }
         },
         {
-          // ✅ IMPORTANT: This triggers fetch when user is within 
+          // ✅ IMPORTANT: This triggers fetch when user is within
           // 200px) of the bottom.
           // The user will likely never see the loading spinner.
-          rootMargin: "200px", 
+          rootMargin: "200px",
         }
       );
 ```
+
+# --------------------------------------------------------------------------------
+
+# mongo db index
+
 Why you MUST Index createdAt
 Your API route has this line:
 
@@ -120,10 +132,11 @@ Click Create Index.
 In the fields box, type:
 
 JSON
+
 ```json
 { "createdAt": -1 }
 ```
-
+# -----------------------------------------------------
 CSS OPTIMIZACIJA:
 
 ```css
@@ -132,19 +145,19 @@ CSS OPTIMIZACIJA:
   position: relative;
   border-radius: 8px; /* 12px is huge for small mobile columns */
   overflow: hidden;
-  
+
   /* ✅ 1. MODERN ASPECT RATIO */
   /* Replaces padding-top: 100%. Tells browser EXACT height immediately. */
-  aspect-ratio: 1 / 1; 
-  
+  aspect-ratio: 1 / 1;
+
   /* ✅ 2. SKELETON BACKGROUND */
   /* User sees this gray box while image is downloading */
-  background-color: #e0e0e0; 
-  
+  background-color: #e0e0e0;
+
   /* ✅ 3. PERFORMANCE BOOST */
   /* Tells browser: "If this is off-screen, don't worry about rendering it perfectly" */
   /* This significantly reduces lag on lists with 100+ items */
-  content-visibility: auto; 
+  content-visibility: auto;
   contain: paint;
 
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -155,39 +168,34 @@ CSS OPTIMIZACIJA:
   animation: popIn 0.4s ease-out forwards;
 }
 ```
+# -------------------------------------------------------------------
+# ANIMATION OPTIMIZATION:
 
-ANIMATION OPTIMIZATION:
-
-I wanted to keep  style={{ animationDelay: `${i * 0.1}s` }} but it seams dellay gets bigger. How to keep animation ?
+I wanted to keep style={{ animationDelay: `${i * 0.1}s` }} but it seams dellay gets bigger. How to keep animation ?
 
 ```js
-{allMedia?.map((item, i) => {
-          const isLast = i === allMedia.length - 1;
-          
-          // ✅ 1. Get the delay base value (0.1s)
-          const DELAY_INCREMENT = 0.1;
-          
-          // ✅ 2. Calculate the local index for the current batch (assuming limit=20)
-          // For the first 20 items (i=0 to 19), localIndex = i.
-          // For the next 20 items (i=20 to 39), localIndex = i % 20 (i.e., 0 to 19).
-          const localIndex = i % 20; 
-          
-          // ✅ 3. Calculate the total animation delay
-          const delay = `${localIndex * DELAY_INCREMENT}s`;
-          
-          return (
-            <div
-              key={item._id}
-              className={styles.imageContainer}
-              // Use the newly calculated 'delay'
-              style={{ animationDelay: delay }} 
-              onClick={() => setSelectedIndex(i)}
-              ref={isLast ? lastMediaRef : null}
-            >
-              {/* ... rest of your Image/Video code ... */}
-            </div>
-          );
-        })}
+{
+  allMedia?.map((item, i) => {
+    const isLast = i === allMedia.length - 1; // ✅ 1. Get the delay base value (0.1s)
+    const DELAY_INCREMENT = 0.1; // ✅ 2. Calculate the local index for the current batch (assuming limit=20)
+    // For the first 20 items (i=0 to 19), localIndex = i.
+    // For the next 20 items (i=20 to 39), localIndex = i % 20 (i.e., 0 to 19).
+    const localIndex = i % 20; // ✅ 3. Calculate the total animation delay
+    const delay = `${localIndex * DELAY_INCREMENT}s`;
+    return (
+      <div
+        key={item._id}
+        className={styles.imageContainer} // Use the newly calculated 'delay'
+        style={{ animationDelay: delay }}
+        onClick={() => setSelectedIndex(i)}
+        ref={isLast ? lastMediaRef : null}
+      >
+                      {/* ... rest of your Image/Video code ... */}         
+         {" "}
+      </div>
+    );
+  });
+}
 ```
 
 CSS OPTIMIZATION FO ANIMATION
@@ -196,10 +204,10 @@ CSS OPTIMIZATION FO ANIMATION
 /* page.module.css */
 .imageContainer {
   /* ... existing styles ... */
-  
+
   /* Apply animation delay ONLY on initial appearance */
   animation: popIn 0.4s ease-out forwards;
-  
+
   /* ✅ OPTIMIZATION: Stop the animation after it finishes once */
   animation-fill-mode: forwards;
 }
@@ -213,12 +221,13 @@ CSS OPTIMIZATION FO ANIMATION
     transform: scale(1);
     opacity: 1;
     /* ✅ OPTIMIZATION: Add visibility: visible to ensure it stays */
-    visibility: visible; 
+    visibility: visible;
   }
 }
 ```
 
 # HANDLE DELETE OF MEDIA INISIDE MODAL
+
 # ------------------------------------------------------------------------
 
 MediaModal.jsx inputs:
@@ -252,54 +261,55 @@ ALL GALLERY page.jsx:
 
 ```js
 //AFTER MODAL DELETE,
-  //REMOVE FROM LOCALSTORAGE LIKED STORED IN CONTEXT
-  //AND REFETCH ALL
-  const handelRefreshMedia = async (mediaInfo) => {
-    const liked = isLiked(mediaInfo?._id);
-    if (liked) handleLiked(mediaInfo);
-    await fetchAllMedia();
-  };
-
+//REMOVE FROM LOCALSTORAGE LIKED STORED IN CONTEXT
+//AND REFETCH ALL
+const handelRefreshMedia = async (mediaInfo) => {
+  const liked = isLiked(mediaInfo?._id);
+  if (liked) handleLiked(mediaInfo);
+  await fetchAllMedia();
+};
 ```
 
 # SCROLING TO THE END IN MODDAL VIEW:
+
 # -----------------------------------------------------------------
 
 ```js
-  const handleNextItem = async () => {
-    if (currentIndex < allMedia.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-    } else if (hasMore) {
-      await loadMoreItems();
-      setCurrentIndex((prev) => prev + 1);
-    }
-  };
+const handleNextItem = async () => {
+  if (currentIndex < allMedia.length - 1) {
+    setCurrentIndex(currentIndex + 1);
+  } else if (hasMore) {
+    await loadMoreItems();
+    setCurrentIndex((prev) => prev + 1);
+  }
+};
 ```
+
 IN ALLGAALLERY PAGE.JSX:
 
 ```js
 //WHEN SCROLING TO THE END OF PAGE IN MODAL VIEW.
-  //WE NEED TO GET MORE ITEMS
-  //THIS FUNCTION RETUERN PROMISE SO CALLER (MEDIAMODAL) can awaited
-  //SO IF WE AWAIT IN MODAL, CURRENT INDEX WILL NOT GO TO UNDEFINED
-  const loadMoreModalItems = async () => {
-    return new Promise((resolve) => {
-      //SET NEXT PAGE
-      //this will triger useEffect(fetchAllMedia)
-      setPage((p) => p + 1);
-      //BUT Wait for loading da bude false
-      //odnsono da fetchAllMedia to complete
-      const interval = setInterval(() => {
-        if (!loading) {
-          clearInterval(interval);
-          //then resolve
-          resolve();
-        }
-      }, 200);
-      // safety stop, prevents infinite waiting
-      setTimeout(() => clearInterval(interval), 5000);
-    });
-  };
+//WE NEED TO GET MORE ITEMS
+//THIS FUNCTION RETUERN PROMISE SO CALLER (MEDIAMODAL) can awaited
+//SO IF WE AWAIT IN MODAL, CURRENT INDEX WILL NOT GO TO UNDEFINED
+const loadMoreModalItems = async () => {
+  return new Promise((resolve) => {
+    //SET NEXT PAGE
+    //this will triger useEffect(fetchAllMedia)
+    setPage((p) => p + 1);
+    //BUT Wait for loading da bude false
+    //odnsono da fetchAllMedia to complete
+    const interval = setInterval(() => {
+      if (!loading) {
+        clearInterval(interval);
+        //then resolve
+        resolve();
+      }
+    }, 200);
+    // safety stop, prevents infinite waiting
+    setTimeout(() => clearInterval(interval), 5000);
+  });
+};
 ```
 
 # INTESECTION OBSERVER:
@@ -315,7 +325,6 @@ The Action: Your code sees that entry, increments the page number, and triggers 
 
 The Refresh: Once new items load, the ref moves to the new last item, the old observer is disconnected, and a new one starts watching the new node.
 
-
 # Is then true that entries[0] is passed node element?
 
 Gemini said
@@ -324,9 +333,70 @@ Not exactly. It’s a common point of confusion: entries[0] is not the node itse
 Think of the node as a house and entries[0] as a status report from a security guard watching that house. The report tells you if someone is inside, but the report is not the house.
 
 The Breakdown
-Term	What it actually is	Key Property
-node	The actual HTML element (<div>)	node.style, node.id, etc.
-entries[0]	An IntersectionObserverEntry object	isIntersecting, intersectionRatio
+Term What it actually is Key Property
+node The actual HTML element (<div>) node.style, node.id, etc.
+entries[0] An IntersectionObserverEntry object isIntersecting, intersectionRatio
 
 Why is it an array (entries[0])?
 The reason it’s an array is that a single IntersectionObserver can be told to watch multiple elements at once (e.g., observer.observe(nodeA), observer.observe(nodeB)).
+
+# -----------------------------------------------------------------------------------------------
+
+# DELETATION PROBLEM SOLVED:
+
+When deleting content i first delete from db an try to delete from cloudflare
+But if from some reason content is already deleted, than it return 403 not found
+That will on another hand bring to restoring deleted content form mongo db
+And ALlGalery compoent will constantly asking for non-exsistent content.
+
+So the solution is when claudflare return 403, mark as deleted and no bringing back
+item from db:
+
+```js
+if (!res.ok) {
+        // If media is already gone on Cloudflare, keep MongoDB delete as success.
+        if (res.status === 404) {
+          return NextResponse.json({
+            success: true,
+            warning: "Media already deleted on Cloudflare",
+          });
+        }
+```
+
+Also in Allgalery page we intorodused state of briken thumbs:
+
+```js
+const [brokenVideoThumbs, setBrokenVideoThumbs] = useState({});
+```
+
+So when no return form content fot the first time, add it tto array one error:
+
+```js
+ <Image
+      onError={() => setBrokenVideoThumbs((prev) => ({
+                ...prev,[item.mediaId]: true,
+          }))
+```
+
+An then when representing all item for each item sheck if it is in broken array
+
+```js
+//if video is broken on server this will prevent
+//getVideoThumbnail(item.mediaId) for continuing request
+//will fail once but not again because of: brokenVideoThumbs[item.mediaId]
+const fallbackVideoThumb =
+  item.contentType === "video" &&
+  (!item.readyToStream || brokenVideoThumbs[item.mediaId]);
+```
+
+# --------------------------------------------------------------------------------
+
+# SAVING CONTENT FROM APP TO GALLERY
+
+//1. ASK NEXT.JS BACKEND FOR UPLOAD URL
+//2. BACKEND ASK CLOUDFLARE FOR URL
+//3. BACKEND SEND UPLOAD URL AND ID TO FRONTEND
+//4. FRONTEND MAKE DIRECT UPLOAD OF VIDEO VIA TUS
+//TO CLOUDFLARE, WITHOUT BACKEND USING THAT URL.
+//5. FORM CONTEN OBJECT WITH THAT ID
+// AND SEND TO NEXT.JS BACKEND TO SAVE THE OBJECT TO MONGODB

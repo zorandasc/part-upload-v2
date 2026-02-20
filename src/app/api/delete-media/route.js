@@ -11,14 +11,16 @@ export async function POST(req) {
     if (!_id) {
       return NextResponse.json({ error: "Id required" }, { status: 400 });
     }
+    if (!ObjectId.isValid(_id)) {
+      return NextResponse.json({ error: "Invalid id format" }, { status: 400 });
+    }
 
     const client = await clientPromise;
     const db = client.db("party");
+    const objectId = new ObjectId(_id);
 
     // 🔹 Find the document first so we can access mediaId and contentType
-    const existing = await db
-      .collection("media")
-      .findOne({ _id: ObjectId.createFromHexString(_id) });
+    const existing = await db.collection("media").findOne({ _id: objectId });
 
     if (!existing) {
       return NextResponse.json({ error: "Media not found" }, { status: 404 });
@@ -50,6 +52,14 @@ export async function POST(req) {
       });
 
       if (!res.ok) {
+        // If media is already gone on Cloudflare, keep MongoDB delete as success.
+        if (res.status === 404) {
+          return NextResponse.json({
+            success: true,
+            warning: "Media already deleted on Cloudflare",
+          });
+        }
+
         //IF CLOUDFLARE DELETE FAILURE, REVERT DELETED MONGODB OBJECT,
         //RETURN FAILURE TO FRONTEND
         await db.collection("media").insertOne(existing);

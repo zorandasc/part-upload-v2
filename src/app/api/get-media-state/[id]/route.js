@@ -73,15 +73,17 @@ export const enableCloudflareVideoDownload = async (mediaId) => {
 export async function GET(req, context) {
   try {
     const { id } = await context.params;
+    if (!ObjectId.isValid(id)) {
+      return NextResponse.json({ error: "Invalid id format" }, { status: 400 });
+    }
 
     const client = await clientPromise;
 
     const db = client.db("party");
+    const objectId = new ObjectId(id);
 
     // Find media in DB
-    const mediaInDb = await db
-      .collection("media")
-      .findOne({ _id: ObjectId.createFromHexString(id) });
+    const mediaInDb = await db.collection("media").findOne({ _id: objectId });
 
     if (!mediaInDb) {
       return NextResponse.json({ error: "Media not found" }, { status: 404 });

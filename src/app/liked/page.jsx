@@ -14,6 +14,7 @@ export default function Liked() {
   const { likedMedia, handleLiked, isLiked } = useLikedContext();
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [brokenVideoThumbs, setBrokenVideoThumbs] = useState({});
 
   const lastMediaRef = null;
 
@@ -35,6 +36,9 @@ export default function Liked() {
         )}
         {likedMedia?.map((item, i) => {
           const isLast = i === likedMedia.length - 1; //determin last media file so we can attach observer
+          const fallbackVideoThumb =
+            item.contentType === "video" &&
+            (!item.readyToStream || brokenVideoThumbs[item.mediaId]);
           return (
             <div
               key={i}
@@ -47,10 +51,17 @@ export default function Liked() {
                 <>
                   <Image
                     priority
-                    src={getVideoThumbnail(item.mediaId)}
-                    onError={(e) => {
-                      e.currentTarget.src = "/logo.png";
-                    }}
+                    src={
+                      fallbackVideoThumb
+                        ? "/logo.png"
+                        : getVideoThumbnail(item.mediaId)
+                    }
+                    onError={() =>
+                      setBrokenVideoThumbs((prev) => ({
+                        ...prev,
+                        [item.mediaId]: true,
+                      }))
+                    }
                     alt={item.name || "Video thumbnail"}
                     fill
                     className={styles.image}

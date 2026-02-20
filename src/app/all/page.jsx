@@ -5,7 +5,6 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { TbPlayerPlayFilled } from "react-icons/tb";
 import { MdOutlineNoPhotography } from "react-icons/md";
 import Image from "next/image";
-import { useLikedContext } from "@/context/LikedContext";
 import {
   getImageBlurThumb,
   getImageUrl,
@@ -25,7 +24,7 @@ export default function All() {
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [hasMore, setHasMore] = useState(true);
   const [isModalOpen, setModalOpen] = useState(false);
-  const { handleLiked, isLiked } = useLikedContext();
+  const [brokenVideoThumbs, setBrokenVideoThumbs] = useState({});
 
   //observer.current It acts as a container. By storing the new IntersectionObserver
   // inside observer.current, you ensure that you can disconnect the old observer
@@ -115,7 +114,7 @@ export default function All() {
   }, [page]);
 
   // Handler called when UploadModal is closed after upload
-  const handleUploadModalClose =async (didUpload = false) => {
+  const handleUploadModalClose = async (didUpload = false) => {
     setModalOpen(false);
     if (didUpload) {
       //OBRISI STARO STANJE
@@ -153,7 +152,6 @@ export default function All() {
     });
   };
 
-
   //AFTER MODAL INTERVAL DETECT VIDEO IS READY TO STREAM
   //UPDATE THAT ITEM IN ALL GALLERY
   //JER KAD MODAL DETEKTUJE DA VIDEO READY BAZA CE BITI UPDEJTOVANA
@@ -164,6 +162,14 @@ export default function All() {
         item._id === id ? { ...item, ...updatedFields } : item,
       ),
     );
+  };
+
+  const handleRefreshAfterDelete = async (deletedMedia) => {
+    if (!deletedMedia?._id) return;
+
+    // Remove immediately so UI reflects delete without full page refresh.
+    setAllMedia((prev) => prev.filter((item) => item._id !== deletedMedia._id));
+    setTotalCount((prev) => Math.max(0, prev - 1));
   };
 
   useEffect(() => {
@@ -211,6 +217,14 @@ export default function All() {
 
           //Calculate the total animation delay
           const delay = `${localIndex * DELAY_INCREMENT}s`;
+
+          //if video is broken on server this will prevent
+          //getVideoThumbnail(item.mediaId) for continuing request
+          //will fail once but not again because of: brokenVideoThumbs[item.mediaId]
+          const fallbackVideoThumb =
+            item.contentType === "video" &&
+            (!item.readyToStream || brokenVideoThumbs[item.mediaId]);
+
           return (
             <div
               key={`${item._id}-${i}`}
@@ -223,14 +237,25 @@ export default function All() {
                 <>
                   <Image
                     //priority
-                    src={getVideoThumbnail(item.mediaId)}
-                    onError={(e) => {
-                      e.currentTarget.src = "/logo.png";
-                    }}
+                    src={
+                      fallbackVideoThumb
+                        ? "/logo.png"
+                        : getVideoThumbnail(item.mediaId)
+                    }
+                    onError={() =>
+                      setBrokenVideoThumbs((prev) => ({
+                        ...prev,
+                        [item.mediaId]: true,
+                      }))
+                    }
                     alt={item.name || "Video thumbnail"}
                     fill
-                    placeholder="blur"
-                    blurDataURL={getVideoBlurThumb(item.mediaId)}
+                    placeholder={fallbackVideoThumb ? "empty" : "blur"}
+                    blurDataURL={
+                      fallbackVideoThumb
+                        ? undefined
+                        : getVideoBlurThumb(item.mediaId)
+                    }
                     className={styles.image}
                     sizes="100%"
                   />
@@ -264,7 +289,7 @@ export default function All() {
         setCurrentIndex={setSelectedIndex}
         onClose={() => setSelectedIndex(null)}
         loadMoreNextItems={loadMoreModalItems}
-        refreshMediaAfterDelete={fetchAllMedia}
+        refreshMediaAfterDelete={handleRefreshAfterDelete}
         updateMediaItem={updateMediaItem}
       ></MediaModal>
 

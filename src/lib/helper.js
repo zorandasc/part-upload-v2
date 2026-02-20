@@ -43,4 +43,4 @@ export const getVideoBlurThumb = (id) =>
   `https://videodelivery.net/${id}/thumbnails/thumbnail.webp?width=40&quality=1`;
 
 export const getImageBlurThumb = (mediaId) =>
-  `https://videodelivery.net/${mediaId}/thumbnails/thumbnail.webp?width=40&quality=10`;
+  `https://imagedelivery.net/${process.env.NEXT_PUBLIC_CF_ACCOUNT_HASH}/${mediaId}/w=40,q=10`;

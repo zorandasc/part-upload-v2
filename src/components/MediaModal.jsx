@@ -156,8 +156,8 @@ export default function MediaModal({
 
       toast.success("Sadržaj obrisan.");
 
-      // ✅ re-fetch (REFRESH) parent befor MODAL close
-      await refreshMediaAfterDelete();
+      // ✅ sync parent state before modal close
+      await refreshMediaAfterDelete(mediaInfo);
 
       // close modal
       onClose();
