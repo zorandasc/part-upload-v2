@@ -90,12 +90,18 @@ export default function UploadModal({ isOpen, onClose }) {
       // 2. Create TUS upload this will do direct upload from
       //frontend to cloudflaren
       const upload = new tus.Upload(file, {
-        endpoint: uploadURL, // Cloudflare upload URL
+        // Cloudflare already returns a concrete upload URL.
+        // Use uploadUrl (not endpoint) so tus-js-client skips creation POST.
+        uploadUrl: uploadURL,
         metadata: {
           filename: file.name,
           filetype: file.type,
         },
         uploadSize: file.size,
+        // Cloudflare Stream tus requires chunked PATCH uploads.
+        // Keeping chunks moderate avoids large single-request failures.
+        chunkSize:Math.floor(50 * 1024 * 1024 / (256 * 1024)) * (256 * 1024),
+        retryDelays: [0, 1000, 3000, 5000],
         onError: (err) => {
           console.error("Upload failed:", err);
           setUploading(false);
