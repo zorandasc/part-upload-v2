@@ -172,6 +172,7 @@ export default function MediaModal({
   //and you open another one where it’s false, your isReady
   // will still be true — stuck with stale state.
   //SO, ✅ Sync local state whenever mediaInfo changes
+  //THIS IS WHEN SCROLLING LEFT/RIGHT INSIDE MODAL - TRACK readytostream
   useEffect(() => {
     if (!mediaInfo) return;
     //The !! (double negation operator) is used to guarantee
@@ -258,7 +259,7 @@ export default function MediaModal({
                 src={
                   isReady
                     ? `${getVideoUrl(
-                        mediaInfo.mediaId
+                        mediaInfo.mediaId,
                       )}?preload=true&ts=${Date.now()}`
                     : undefined
                 }
@@ -276,7 +277,7 @@ export default function MediaModal({
             <Image
               src={getImageUrl(mediaInfo.mediaId, "public")}
               alt={`Image uploaded by ${mediaInfo.userId} on ${new Date(
-                mediaInfo.createdAt
+                mediaInfo.createdAt,
               ).toLocaleString()}`}
               fill
               sizes="90vw"

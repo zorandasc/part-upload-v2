@@ -52,15 +52,7 @@ export const enableCloudflareVideoDownload = async (mediaId) => {
       },
     }
   );
-  /*
-  const data = await res.json();
-  if (!res.ok || !data.success)
-    throw new Error(
-      `Failed to enable download: ${JSON.stringify(data.errors)}`
-    );
-
-  return data.result;
-  */
+ 
 };
 
 //API POINT CALLED BY MEDIAMODAL, TO CHECK IF VIDEO IS READY TO STREAM
