@@ -1,7 +1,7 @@
 "use client";
 
 import styles from "./page.module.css";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { TbPlayerPlayFilled } from "react-icons/tb";
 import { MdOutlineNoPhotography } from "react-icons/md";
 import Image from "next/image";
@@ -113,6 +113,19 @@ export default function All() {
     }
   }, [page]);
 
+  //gather all id of mediainfo that are video and not readytostream
+  //useMemo() On the initial render, React runs the calculation
+  //On subsequent renders, React compares the dependencies
+  //If dependencies haven’t changed, it returns the cached value.
+  //id changed it re-runs the calculation and updates the cache.
+  const pendingVideoIds = useMemo(
+    () =>
+      allMedia
+        .filter((m) => m.contentType === "video" && !m.readyToStream)
+        .map((m) => m._id),
+    [allMedia],
+  );
+
   // Handler called when UploadModal is closed after upload
   const handleUploadModalClose = async (didUpload = false) => {
     setModalOpen(false);
@@ -152,18 +165,6 @@ export default function All() {
     });
   };
 
-  //AFTER MODAL INTERVAL DETECT VIDEO IS READY TO STREAM
-  //UPDATE THAT ITEM IN ALL GALLERY
-  //JER KAD MODAL DETEKTUJE DA VIDEO READY BAZA CE BITI UPDEJTOVANA
-  //ALI LOKALNO STANJE NECE JER NEMA REFRESHA, MODAL JE DIO ALL-PAGE.
-  const updateMediaItem = (id, updatedFields) => {
-    setAllMedia((prev) =>
-      prev.map((item) =>
-        item._id === id ? { ...item, ...updatedFields } : item,
-      ),
-    );
-  };
-
   const handleRefreshAfterDelete = async (deletedMedia) => {
     if (!deletedMedia?._id) return;
 
@@ -171,6 +172,58 @@ export default function All() {
     setAllMedia((prev) => prev.filter((item) => item._id !== deletedMedia._id));
     setTotalCount((prev) => Math.max(0, prev - 1));
   };
+
+  //POLL the api/get-media-state for every id in pendingVideoIds
+  useEffect(() => {
+    if (pendingVideoIds.length === 0) return;
+
+    let cancelled = false;
+    let timer;
+
+    const pollPendingVideos = async () => {
+      try {
+        //result is array of mediainfo object returned from api that are readytostream
+        const results = await Promise.all(
+          pendingVideoIds.map(async (id) => {
+            const res = await fetch(`/api/get-media-state/${id}`);
+            if (!res.ok) return null;
+            return res.json();
+          }),
+        );
+
+        if (cancelled) return;
+
+        //1. update allMedia with new state
+        //2. and this will than change pendingVideoIds
+        //3. The Dependency Array Changes [pendingVideoIds.join("|")]
+        //4. react runs the cleanup function of the old effect (cancelled = true, timer cleared).
+        //5. React then runs the new effect starting from scratch.
+        setAllMedia((prev) =>
+          prev.map((item) => {
+            const updated = results.find((r) => r && r._id === item._id);
+            return updated?.readyToStream && !item.readyToStream
+              ? { ...item, readyToStream: true, status: updated.status }
+              : item;
+          }),
+        );
+      } catch (e) {
+        console.error("Shared polling failed:", e);
+      } finally {
+        if (!cancelled) timer = setTimeout(pollPendingVideos, 10000);
+      }
+    };
+
+    pollPendingVideos();
+
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
+    //pendingVideoIds is an array, and array identity changes easily.
+    //.join("|") converts it to one stable string like "id1|id2|id3".
+    //so the dependency only changes if the content of the list actually changes
+    //So it’s a dependency-stabilization trick.
+  }, [pendingVideoIds.join("|")]);
 
   useEffect(() => {
     return () => {
@@ -290,7 +343,6 @@ export default function All() {
         onClose={() => setSelectedIndex(null)}
         loadMoreNextItems={loadMoreModalItems}
         refreshMediaAfterDelete={handleRefreshAfterDelete}
-        updateMediaItem={updateMediaItem}
       ></MediaModal>
 
       <UploadButton

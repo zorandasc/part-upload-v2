@@ -23,8 +23,6 @@ export default function MediaModal({
   onClose,
   loadMoreNextItems,
   refreshMediaAfterDelete,
-  //function to update allgalery item when video ready to stream
-  updateMediaItem,
 }) {
   const mediaInfo =
     currentIndex !== null && allMedia?.[currentIndex]
@@ -186,51 +184,6 @@ export default function MediaModal({
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [currentIndex]);
-
-  //POLL EVERY 10S FOR VIDEO TO CHECK IF VIDEO IS READY TO STREAM.
-  //FOR VIDEO TO BE READY TO STREAM, MUST BE:
-  //1. CLOUDFLARE MUST SET FLAG readyToStream TO TRUE
-  //2. CDN NETWORK MUST POBAGATE CONTEN
-  useEffect(() => {
-    // ✅ Skip if no mediaInfo yet
-    if (!mediaInfo) return;
-
-    //SKIP FOR IMAGE AND FOR VIDEO WITH readyToStream IS TRUE
-    if (mediaInfo.contentType !== "video" || mediaInfo.readyToStream) {
-      setIsReady(true);
-      return;
-    }
-
-    //THIS 10S INTERVAL WILL START IF MEDIA IS:
-    // 1. VIDEO
-    // 2. AND readyToStream=FALSE
-    const interval = setInterval(async () => {
-      try {
-        //THIS API WILL CHECK:
-        //IF CLOUDFLARE IS READYTOSTREMA
-        //AND IF CDN NETWORK IS PROPAGATED
-        const res = await fetch(`/api/get-media-state/${mediaInfo._id}`);
-
-        if (res.ok) {
-          const updated = await res.json();
-          //console.log("updated.readyToStream", updated.readyToStream);
-
-          if (updated.readyToStream) {
-            //CLOUDFLARE IS READY
-            setIsReady(true); // ✅ flip local flag
-            clearInterval(interval);
-            // ✅ Tell parent gallery to update that one item
-            // BECAUSE Modal IS NOT PAGE
-            updateMediaItem(mediaInfo._id, { readyToStream: true });
-          }
-        }
-      } catch (err) {
-        console.error("Polling video status failed:", err);
-      }
-    }, 10000); //every 10s
-
-    return () => clearInterval(interval);
-  }, [currentIndex, mediaInfo?._id, setCurrentIndex]);
 
   // 🛑 Guard AFTER hooks, in render
   if (!mediaInfo) return null;

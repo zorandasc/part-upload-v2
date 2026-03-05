@@ -136,7 +136,9 @@ JSON
 ```json
 { "createdAt": -1 }
 ```
+
 # -----------------------------------------------------
+
 CSS OPTIMIZACIJA:
 
 ```css
@@ -168,7 +170,9 @@ CSS OPTIMIZACIJA:
   animation: popIn 0.4s ease-out forwards;
 }
 ```
+
 # -------------------------------------------------------------------
+
 # ANIMATION OPTIMIZATION:
 
 I wanted to keep style={{ animationDelay: `${i * 0.1}s` }} but it seams dellay gets bigger. How to keep animation ?
@@ -400,3 +404,133 @@ const fallbackVideoThumb =
 //TO CLOUDFLARE, WITHOUT BACKEND USING THAT URL.
 //5. FORM CONTEN OBJECT WITH THAT ID
 // AND SEND TO NEXT.JS BACKEND TO SAVE THE OBJECT TO MONGODB
+
+# -------------------------------------------------------------------
+
+# OLD CODE OF POLLING INSIDE MEDIA MODAL:
+
+```JS
+ //POLL EVERY 10S FOR VIDEO TO CHECK IF VIDEO IS READY TO STREAM.
+  //FOR VIDEO TO BE READY TO STREAM, MUST BE:
+  //1. CLOUDFLARE MUST SET FLAG readyToStream TO TRUE
+  //2. CDN NETWORK MUST POBAGATE CONTEN
+
+  useEffect(() => {
+    // ✅ Skip if no mediaInfo yet
+    if (!mediaInfo) return;
+
+    //SKIP FOR IMAGE AND FOR VIDEO WITH readyToStream IS TRUE
+    if (mediaInfo.contentType !== "video" || mediaInfo.readyToStream) {
+      setIsReady(true);
+      return;
+    }
+
+    //THIS 10S INTERVAL WILL START IF MEDIA IS:
+    // 1. VIDEO
+    // 2. AND readyToStream=FALSE
+    const interval = setInterval(async () => {
+      try {
+        //THIS API WILL CHECK:
+        //IF CLOUDFLARE IS READYTOSTREMA
+        //AND IF CDN NETWORK IS PROPAGATED
+        const res = await fetch(`/api/get-media-state/${mediaInfo._id}`);
+
+        if (res.ok) {
+          const updated = await res.json();
+          //console.log("updated.readyToStream", updated.readyToStream);
+
+          if (updated.readyToStream) {
+            //CLOUDFLARE IS READY
+            setIsReady(true); // ✅ flip local flag
+            clearInterval(interval);
+            // ✅ Tell parent gallery to update that one item
+            // BECAUSE Modal IS NOT PAGE
+            updateMediaItem(mediaInfo._id, { readyToStream: true });
+          }
+        }
+      } catch (err) {
+        console.error("Polling video status failed:", err);
+      }
+    }, 10000); //every 10s
+
+    return () => clearInterval(interval);
+  }, [currentIndex, mediaInfo?._id, setCurrentIndex]);
+
+```
+
+# AND ALLGALERY PAGE
+```JS
+ //AFTER MODAL INTERVAL DETECT VIDEO IS READY TO STREAM
+  //UPDATE THAT ITEM IN ALL GALLERY
+  //JER KAD MODAL DETEKTUJE DA VIDEO READY BAZA CE BITI UPDEJTOVANA
+  //ALI LOKALNO STANJE NECE JER NEMA REFRESHA, MODAL JE DIO ALL-PAGE.
+  
+  const updateMediaItem = (id, updatedFields) => {
+    setAllMedia((prev) =>
+      prev.map((item) =>
+        item._id === id ? { ...item, ...updatedFields } : item,
+      ),
+    );
+  };
+
+```
+# -------------------------------------------------------------------
+# NEW POLLING INSIDE ALLGALERY FOR READYTOSTREAM
+
+```JS
+const pendingVideoIds = useMemo(
+    () =>
+      allMedia
+        .filter((m) => m.contentType === "video" && !m.readyToStream)
+        .map((m) => m._id),
+    [allMedia],
+  );
+
+  useEffect(() => {
+    if (pendingVideoIds.length === 0) return;
+     pollPendingVideos();
+  ....
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
+    //pendingVideoIds is an array, and array identity changes easily.
+    //.join("|") converts it to one stable string like "id1|id2|id3".
+    //so the dependency only changes if the content of the list actually changes
+    //So it’s a dependency-stabilization trick.
+  }, [pendingVideoIds.join("|")]);
+```
+
+Here is exactly how the useMemo and useEffect work together to start and stop the polling:
+
+The "Reactive Loop" Step-by-Step
+Initial State: You have a video in allMedia where readyToStream is false.
+
+The Memo Calculation: The useMemo sees this, filters it, and puts the ID into the pendingVideoIds array.
+
+The Effect Trigger: Because pendingVideoIds.join("|") now contains that ID, the useEffect starts its 10-second polling timer.
+
+The Discovery: The fetch finally returns a result where readyToStream: true.
+
+The State Update: The hook calls setAllMedia. It finds that specific video in the array and flips its readyToStream property to true.
+
+The Auto-Stop:
+
+Because allMedia changed, the useMemo re-calculates.
+
+Since the video is now readyToStream: true, the .filter() excludes it.
+
+pendingVideoIds becomes an empty array (or just shorter).
+
+The dependency string join("|") changes.
+
+This triggers the useEffect cleanup function (cancelled = true, clearTimeout), effectively killing the old polling loop.
+
+If pendingVideoIds.length is now 0, the new effect hits the if (...) return line and stops entirely.
+
+Why this is a "Clean" Pattern
+This is a very sophisticated way to handle side effects because:
+
+Declarative: You aren't manually telling the poller to "stop." You are simply saying "poll as long as there are pending videos." Once the data matches your "done" criteria, the system cleans itself up.
+
+Resilient: If the user refreshes the page or navigates away, the cleanup function ensures no ghost timers are running in the background.
