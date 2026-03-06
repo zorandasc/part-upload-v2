@@ -67,7 +67,7 @@
   background-color: white;
   color: hsl(0, 2%, 18%);
   box-shadow: #020202 0px 0px 0px 0px;
-  transform: translateY(10px);
+  transform: translateY(2px);
   transition: 100ms;
   border: 1px solid goldenrod;
 }
