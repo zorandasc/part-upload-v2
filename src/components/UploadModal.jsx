@@ -51,35 +51,26 @@ export default function UploadModal({ isOpen, onClose }) {
   //3. BACKEND SEND UPLOAD URL AND ID TO FRONTEND
   //4. FRONTEND MAKE DIRECT UPLOAD OF VIDEO VIA TUS
   //TO CLOUDFLARE, WITHOUT BACKEND USING THAT URL.
-  //5. FORM CONTEN OBJECT WITH THAT ID 
+  //5. FORM CONTEN OBJECT WITH THAT ID
   // AND SEND TO NEXT.JS BACKEND TO SAVE THE OBJECT TO MONGODB
   const handleVideoUpload = async () => {
+    if (!file) return;
     setUploading(true);
-
-    const metadataObj = {
-      filename: file.name,
-      filetype: file.type,
-      maxDurationSeconds: "600", // encode in metadata
-    };
-    //To do so, you must pass the expiry and maxDurationSeconds
-    //as part of the Upload-Metadata request header as part of the first request
-    //The Upload-Metadata header should contain key-value pairs.
-    //The keys are text and the values should be encoded in base64.
-    // Separate the key and values by a space, not an equal sign.
-    //To join multiple key-value pairs, include a comma with no additional spaces.
-    //Object.entries Returns an array of key/values
-    //https://developers.cloudflare.com/stream/uploading-videos/direct-creator-uploads/
-    const metadata = Object.entries(metadataObj)
-      .map(([k, v]) => `${k} ${btoa(v)}`)
-      .join(",");
+    setProgress(0);
 
     try {
-      // 1. Ask backend for upload URL
+      // 1. Ask backend for upload URL for direct video upload to cloudflare
       const res = await fetch("/api/create-video-upload-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fileSize: file.size, metadata }),
+        body: JSON.stringify({
+          fileSize: file.size,
+          fileName: file.name,
+          fileType: file.type,
+        }),
       });
+
+      if (!res.ok) throw new Error("Cannot get upload URL");
 
       const { uploadURL, uid } = await res.json();
 
@@ -93,17 +84,29 @@ export default function UploadModal({ isOpen, onClose }) {
         // Cloudflare already returns a concrete upload URL.
         // Use uploadUrl (not endpoint) so tus-js-client skips creation POST.
         uploadUrl: uploadURL,
-        metadata: {
-          filename: file.name,
-          filetype: file.type,
-        },
-        uploadSize: file.size,
         // Cloudflare Stream tus requires chunked PATCH uploads.
         // Keeping chunks moderate avoids large single-request failures.
-        chunkSize:Math.floor(50 * 1024 * 1024 / (256 * 1024)) * (256 * 1024),
-        retryDelays: [0, 1000, 3000, 5000],
+        chunkSize: 50 * 1024 * 1024,
+        retryDelays: [0, 1000, 3000, 5000, 10000],
+        uploadSize: file.size,
+
+        onShouldRetry: (err, retryAttempt) => {
+          // Retry network errors / timeouts aggressively (ProgressEvent often means aborted)
+          const isTransient =
+            !err?.originalRequest?.status || // no response / aborted
+            err?.originalRequest?.status === 0 ||
+            err.message?.includes("ProgressEvent") ||
+            err.message?.includes("timeout") ||
+            err.message?.includes("abort") ||
+            err.message?.includes("network");
+
+          // Retry up to ~10-15 times for network flakes (total ~3-5 min wait)
+          return retryAttempt < 12 && isTransient;
+        },
+
         onError: (err) => {
           console.error("Upload failed:", err);
+          toast.error("Upload nije uspio. Pokušaj ponovo.");
           setUploading(false);
         },
         onProgress: (bytesUploaded, bytesTotal) => {
@@ -111,15 +114,11 @@ export default function UploadModal({ isOpen, onClose }) {
           setProgress(percentage);
         },
         onSuccess: async () => {
-          console.log("✅ Upload finished! UID:", uid);
-
           // 3. Save UID to DB
           await saveToDb(uid, "video");
-
+          console.log("✅ Upload finished! UID:", uid);
           toast.success("Video je uspješno poslan.🎉");
-
           setUploading(false);
-
           onClose(true);
         },
       });
@@ -128,6 +127,7 @@ export default function UploadModal({ isOpen, onClose }) {
       upload.start();
     } catch (err) {
       console.error("Upload error:", err);
+      toast.error("Greška: " + err.message);
       setUploading(false);
     }
   };
@@ -236,6 +236,7 @@ export default function UploadModal({ isOpen, onClose }) {
                 <input
                   type="file"
                   accept="image/*,video/*"
+                  capture="environment"
                   className={styles.fileInput}
                   onChange={handleFileChange}
                 />
@@ -268,6 +269,7 @@ export default function UploadModal({ isOpen, onClose }) {
                 {uploading ? `Uploading... ${progress}%` : "Dodaj u album"}
               </button>
             )}
+            
           </motion.div>
         </motion.div>
       )}
