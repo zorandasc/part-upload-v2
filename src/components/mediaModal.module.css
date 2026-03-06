@@ -28,6 +28,7 @@
   flex-direction: column; /* Stack imageInfo and image vertically */
   gap: 5px; /* Space between imageInfo and image */
   /*border: 1px solid rgba(255, 255, 255, 0.91);*/
+  margin-bottom: 1.5rem;
 }
 
 .imageInfo {

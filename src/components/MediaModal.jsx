@@ -1,6 +1,6 @@
 "use client";
 import styles from "./mediaModal.module.css";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { toast } from "react-hot-toast";
 
@@ -40,6 +40,14 @@ export default function MediaModal({
 
   //IS UPLOADED VIDEO READY TO STREAM
   const [isReady, setIsReady] = useState(mediaInfo?.readyToStream || false);
+
+  //in iframe there is: `${getVideoUrl(mediaInfo.mediaId)}?preload=true&ts=${videoCacheBuster}`
+  //IN ANOTHER WORS CONSTRUCT NEW IFRAME, AND THAT IS WHEN DATE CHANGE
+  //AND THAT IS ONLY WHEN THIS CHENGE: mediaInfo?.mediaId, isReady
+  const videoCacheBuster = useMemo(
+    () => Date.now(),
+    [mediaInfo?.mediaId, isReady],
+  );
 
   const touchStartX = useRef(null);
 
@@ -131,6 +139,9 @@ export default function MediaModal({
 
   const handleDelete = async () => {
     if (!mediaInfo?._id) return;
+    if (!window.confirm("Da li ste sigurni da želite da izbrišete sadržaj?"))
+      return;
+
     try {
       //DELETE FROM DB AND FROM CLOUDFLARE
       const res = await fetch("/api/delete-media", {
@@ -147,6 +158,7 @@ export default function MediaModal({
         return;
       }
 
+      //deleete also from liked
       const liked = isLiked(mediaInfo?._id);
       if (liked) handleLiked(mediaInfo);
 
@@ -211,9 +223,7 @@ export default function MediaModal({
                 // 2. Append timestamp to bypass browser cache of previous 404s
                 src={
                   isReady
-                    ? `${getVideoUrl(
-                        mediaInfo.mediaId,
-                      )}?preload=true&ts=${Date.now()}`
+                    ? `${getVideoUrl(mediaInfo.mediaId)}?preload=true&ts=${videoCacheBuster}`
                     : undefined
                 }
                 className={styles.modalVideo}

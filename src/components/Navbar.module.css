@@ -48,9 +48,7 @@
 
 .arrowBack {
   font-size: 30px;
-  margin-right: 1rem;
-  font-size: 30px;
-  margin-right: 1rem;
+  margin-left: 0.2rem;
   border-radius: 50%;
   width: 30px;
   height: 30px;
@@ -59,4 +57,46 @@
   align-items: center;
   color:  #6f6959;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+.rightActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-right: 0.75rem;
+}
+
+.adminBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.45);
+  color: #4a4538;
+  border: 1px solid rgba(111, 105, 89, 0.25);
+  font-size: 1rem;
+  line-height: 1;
+  backdrop-filter: blur(6px);
+}
+
+.adminBadge svg {
+  font-size: 1.2rem;
+}
+
+.iconBtn {
+  border: none;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #6f6959;
+  background: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+}
+.iconBtn svg {
+  font-size: 1.2rem;
 }
