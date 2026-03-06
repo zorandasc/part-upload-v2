@@ -211,6 +211,7 @@ export default function MediaModal({
       aria-modal="true"
     >
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+        <span className={styles.id}>ID: {mediaInfo?._id?.slice(-8)}</span>
         <h2 id="modal-title" className={styles.visuallyHidden}>
           Image Modal
         </h2>
@@ -239,7 +240,7 @@ export default function MediaModal({
           ) : (
             <Image
               src={getImageUrl(mediaInfo.mediaId, "public")}
-              alt={`Image uploaded by ${mediaInfo.userId} on ${new Date(
+              alt={`Image uploaded on ${new Date(
                 mediaInfo.createdAt,
               ).toLocaleString()}`}
               fill
@@ -267,8 +268,7 @@ export default function MediaModal({
 
         <div className={styles.imageInfo}>
           <div className={styles.generalije}>
-            <span className={styles.user}>{mediaInfo.userId}</span>
-            <span className={styles.user}>
+            <span className={styles.date}>
               {new Date(mediaInfo.createdAt).toLocaleString()}
             </span>
           </div>
