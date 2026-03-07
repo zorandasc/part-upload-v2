@@ -41,10 +41,10 @@ export default function MediaModal({
   //IS UPLOADED VIDEO READY TO STREAM
   const [isReady, setIsReady] = useState(mediaInfo?.readyToStream || false);
 
-  //in iframe there is: `${getVideoUrl(mediaInfo.mediaId)}?preload=true&ts=${videoCacheBuster}`
-  //IN ANOTHER WORS CONSTRUCT NEW IFRAME, AND THAT IS WHEN DATE CHANGE
-  //AND THAT IS ONLY WHEN THIS CHENGE: mediaInfo?.mediaId, isReady
-  const videoCacheBuster = useMemo(
+  //in iframe there is: src= `${getVideoUrl(mediaInfo.mediaId)}?preload=true&ts=${videoCacheBuster}`
+  //IN ANOTHER WORDS: RERENDER NEW IFRAME WITH UNIQUE NEW DATE IDENTIFIER
+  //ONLY WHEN THIS CHENGE: mediaInfo?.mediaId, isReady
+  const iframeStopReRender = useMemo(
     () => Date.now(),
     [mediaInfo?.mediaId, isReady],
   );
@@ -224,7 +224,7 @@ export default function MediaModal({
                 // 2. Append timestamp to bypass browser cache of previous 404s
                 src={
                   isReady
-                    ? `${getVideoUrl(mediaInfo.mediaId)}?preload=true&ts=${videoCacheBuster}`
+                    ? `${getVideoUrl(mediaInfo.mediaId)}?preload=true&ts=${iframeStopReRender}`
                     : undefined
                 }
                 className={styles.modalVideo}
