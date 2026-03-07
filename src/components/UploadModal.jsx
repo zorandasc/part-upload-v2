@@ -7,6 +7,9 @@ import * as tus from "tus-js-client"; // ✅ import tus
 import { toast } from "react-hot-toast";
 import { FaCirclePlus } from "react-icons/fa6";
 
+const MAX_VIDEO_SIZE = 500 * 1024 * 1024; // 500MB
+const MAX_IMAGE_SIZE = 15 * 1024 * 1024; // 15MB
+
 export default function UploadModal({ isOpen, onClose }) {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -86,23 +89,9 @@ export default function UploadModal({ isOpen, onClose }) {
         uploadUrl: uploadURL,
         // Cloudflare Stream tus requires chunked PATCH uploads.
         // Keeping chunks moderate avoids large single-request failures.
-        chunkSize: 50 * 1024 * 1024,
+        chunkSize: 5 * 1024 * 1024,
         retryDelays: [0, 1000, 3000, 5000, 10000],
         uploadSize: file.size,
-
-        onShouldRetry: (err, retryAttempt) => {
-          // Retry network errors / timeouts aggressively (ProgressEvent often means aborted)
-          const isTransient =
-            !err?.originalRequest?.status || // no response / aborted
-            err?.originalRequest?.status === 0 ||
-            err.message?.includes("ProgressEvent") ||
-            err.message?.includes("timeout") ||
-            err.message?.includes("abort") ||
-            err.message?.includes("network");
-
-          // Retry up to ~10-15 times for network flakes (total ~3-5 min wait)
-          return retryAttempt < 12 && isTransient;
-        },
 
         onError: (err) => {
           console.error("Upload failed:", err);
@@ -172,6 +161,7 @@ export default function UploadModal({ isOpen, onClose }) {
       toast.success("Slika je uspješno poslana.🎉");
     } catch (err) {
       console.error("Upload error:", err);
+      toast.error("Greška pri uploadu slike: " + err.message);
     } finally {
       setUploading(false);
 
@@ -180,13 +170,23 @@ export default function UploadModal({ isOpen, onClose }) {
   };
 
   const handleUpload = () => {
+    if (uploading) return;
     if (!file) {
       onClose(false);
       return;
     }
     if (file.type.startsWith("video/")) {
+      if (file.size > MAX_VIDEO_SIZE) {
+        toast.error("Video je prevelik (max 500MB)");
+        return;
+      }
+
       handleVideoUpload();
     } else if (file.type.startsWith("image/")) {
+      if (file.size > MAX_IMAGE_SIZE) {
+        toast.error("Slika je prevelika (max 15MB)");
+        return;
+      }
       handleImageUpload();
     } else {
       alert("Unsupported file type");
@@ -236,7 +236,7 @@ export default function UploadModal({ isOpen, onClose }) {
                 <input
                   type="file"
                   accept="image/*,video/*"
-                  capture="environment"
+                  capture
                   className={styles.fileInput}
                   onChange={handleFileChange}
                 />
@@ -269,7 +269,6 @@ export default function UploadModal({ isOpen, onClose }) {
                 {uploading ? `Uploading... ${progress}%` : "Dodaj u album"}
               </button>
             )}
-            
           </motion.div>
         </motion.div>
       )}

@@ -31,7 +31,7 @@ export async function POST(req) {
     //https://developers.cloudflare.com/stream/uploading-videos/direct-creator-uploads/
     const metadataParts = [
       `maxDurationSeconds ${b64(maxDurationSeconds)}`,
-      `epiry ${b64(expiryISO)}`,
+      `expiry ${b64(expiryISO)}`,
       // Optional: add requiresignedurls if you want private playback
       // `requiresignedurls`,
       // Optional: filename & filetype for nicer dashboard view
