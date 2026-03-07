@@ -11,6 +11,7 @@ which can take a few seconds to a few minutes depending on the length of your vi
 When the readyToStream value returns true, your video is ready for streaming. 
 https://developers.cloudflare.com/stream/uploading-videos/upload-via-link/*/
 //POLL CF TO SEE IS VIDEO READY TO STREAM
+//Called by AllGalery Page
 export const getCloudflareVideoStatus = async (mediaId) => {
   const res = await fetch(
     `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/stream/${mediaId}`,
@@ -18,7 +19,7 @@ export const getCloudflareVideoStatus = async (mediaId) => {
       headers: {
         Authorization: `Bearer ${CF_STREAM_TOKEN}`,
       },
-    }
+    },
   );
 
   if (!res.ok) throw new Error(`Cloudflare API error: ${res.status}`);
@@ -26,7 +27,7 @@ export const getCloudflareVideoStatus = async (mediaId) => {
 
   if (!data.success)
     throw new Error(
-      `Cloudflare API returned error: ${JSON.stringify(data.errors)}`
+      `Cloudflare API returned error: ${JSON.stringify(data.errors)}`,
     );
 
   // Cloudflare wraps everything in data.result
@@ -50,9 +51,8 @@ export const enableCloudflareVideoDownload = async (mediaId) => {
         Authorization: `Bearer ${CF_STREAM_TOKEN}`,
         "Content-Type": "application/json",
       },
-    }
+    },
   );
- 
 };
 
 //API POINT CALLED BY MEDIAMODAL, TO CHECK IF VIDEO IS READY TO STREAM
@@ -115,7 +115,7 @@ export async function GET(req, context) {
                   status: cfStatus.status,
                   allowDownload: true,
                 },
-              }
+              },
             );
 
             // also update in the response
@@ -138,7 +138,7 @@ export async function GET(req, context) {
     console.error(error);
     return NextResponse.json(
       { error: "Failed to fetch media state" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

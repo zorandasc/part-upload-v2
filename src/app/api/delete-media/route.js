@@ -19,24 +19,24 @@ export async function POST(req) {
     const db = client.db("party");
     const objectId = new ObjectId(_id);
 
-    // 🔹 Find the document first so we can access mediaId and contentType
+    //1. 🔹 Find the document first so we can access mediaId and contentType
     const existing = await db.collection("media").findOne({ _id: objectId });
 
     if (!existing) {
       return NextResponse.json({ error: "Media not found" }, { status: 404 });
     }
 
-    //TRY TO DELETE OBJECT IN MONGODB by _id
+    //2.TRY TO DELETE OBJECT IN MONGODB by _id
     const deleteResult = await db
       .collection("media")
       .deleteOne({ _id: existing._id });
 
-    //TRY TO DELETE MEDIA IN CLOUDFLARE by mediaId
     const CF_ACCOUNT_ID = process.env.CF_ACCOUNT_ID;
     const CF_STREAM_TOKEN = process.env.CF_STREAM_TOKEN;
 
     let cfUrl = "";
 
+    //3. GET THE LINK FOR DELETATIONS OF MEDIA FROM CLOUDFLARE
     if (existing.contentType === "video") {
       // Cloudflare Stream
       cfUrl = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/stream/${existing.mediaId}`;
@@ -45,12 +45,14 @@ export async function POST(req) {
       cfUrl = `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/images/v1/${existing.mediaId}`;
     }
 
+    //4. TRY TO DELETE MEDIA IN CLOUDFLARE by mediaId
     if (cfUrl) {
       const res = await fetch(cfUrl, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${CF_STREAM_TOKEN}` },
       });
 
+      //If res not 200 except 404 (not found)
       if (!res.ok) {
         // If media is already gone on Cloudflare, keep MongoDB delete as success.
         if (res.status === 404) {
@@ -66,7 +68,7 @@ export async function POST(req) {
 
         return NextResponse.json(
           { error: "Cloudflare deletion failed, reverted MongoDB" },
-          { status: 500 }
+          { status: 500 },
         );
       }
     }
@@ -77,7 +79,7 @@ export async function POST(req) {
     console.error("❌ Error deleting media:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

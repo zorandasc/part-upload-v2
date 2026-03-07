@@ -1,22 +1,68 @@
 "use client";
 
 import styles from "./page.module.css";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { TbPlayerPlayFilled } from "react-icons/tb";
 import { MdOutlineNoPhotography } from "react-icons/md";
+import { toast } from "react-hot-toast";
 
 import { useLikedContext } from "@/context/LikedContext";
 import { getImageUrl, getVideoThumbnail } from "@/lib/helper";
 import MediaModal from "@/components/MediaModal";
 
 export default function Liked() {
-  const { likedMedia, handleLiked, isLiked } = useLikedContext();
+  const { likedMedia, setLikedMedia, handleLiked, isLiked } = useLikedContext();
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [loading, setLoading] = useState(false);
   const [brokenVideoThumbs, setBrokenVideoThumbs] = useState({});
+  const hasPrunedStaleLiked = useRef(false);
 
   const lastMediaRef = null;
+
+  //AKO JE NEKI SADRAZJ UKLJONJEN OD STRANE ADMIN USERA
+  useEffect(() => {
+    const pruneStaleLikedMedia = async () => {
+      //Run prune only when page first visit
+      if (hasPrunedStaleLiked.current) return;
+      hasPrunedStaleLiked.current = true;
+
+      //provijeri dali likedMedia uopste postiji kao array
+      if (!Array.isArray(likedMedia) || likedMedia.length === 0) return;
+
+      //Od cijelog likedMedia dobavi sve id-ijeve
+      const ids = likedMedia.map((item) => item?._id).filter(Boolean);
+      if (ids.length === 0) return;
+
+      //Posalje sve id-ijeve likedMedia na backend routu
+      //koja ce provijeriti i vraitit sve id-ijev koji i
+      //dalje postoje na cloudflare
+      try {
+        const res = await fetch("/api/check-liked-media", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ids }),
+        });
+
+        if (!res.ok) return;
+
+        const data = await res.json();
+        const existingIds = new Set(data.existingIds || []);
+        //Prikazi samo one koji postoje na cloudflare
+        //obrisisi ostale postu su broken in localstorage
+        const pruned = likedMedia.filter((item) => existingIds.has(item._id));
+
+        if (pruned.length !== likedMedia.length) {
+          setLikedMedia(pruned);
+          toast("Neki od sviđanih sadržaj više ne postoji i uklonjen je.");
+        }
+      } catch (error) {
+        console.error("Failed to prune stale liked media:", error);
+      }
+    };
+
+    pruneStaleLikedMedia();
+  }, [likedMedia, setLikedMedia]);
 
   //RFERESH LIKDE ARRAY IN LOCAL STORAGE
   //AFTER DELETE OF MODAL

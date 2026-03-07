@@ -42,7 +42,9 @@ export function LikedProvider({ children }) {
     likedMedia.some((m) => m._id === mediaId || m.mediaId === mediaId);
 
   return (
-    <LikedContext.Provider value={{ likedMedia, handleLiked, isLiked }}>
+    <LikedContext.Provider
+      value={{ likedMedia, setLikedMedia, handleLiked, isLiked }}
+    >
       {children}
     </LikedContext.Provider>
   );
