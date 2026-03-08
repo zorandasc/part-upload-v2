@@ -112,3 +112,29 @@
   border: none;
 }
 
+.cancelBtn {
+  font-family: Raleway, serif;
+  color: #6f6959;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1;
+  position: relative;
+  text-align: center;
+  margin: 1vh auto;
+  margin-bottom: 0;
+  padding: 1.8vh 0;
+  width: 100%;
+  max-width: 300px;
+  background: transparent;
+  -webkit-backdrop-filter: blur(15px);
+  backdrop-filter: blur(15px);
+  border-radius: 5px;
+  box-shadow: 1px 1px 0 0 rgba(255, 255, 255, 0.8) inset,
+    3px 5px 10px 0 rgba(0, 0, 0, 0.1);
+  text-decoration: none;
+  will-change: color, text-shadow, font-size;
+  transition: ease all 0.3s;
+  outline: none;
+  border: none;
+}

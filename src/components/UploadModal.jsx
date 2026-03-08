@@ -91,10 +91,12 @@ export default function UploadModal({ isOpen, onClose }) {
         chunkSize: 50 * 1024 * 1024, // 50MB: fewer PATCH requests on mobile Chrome,
         retryDelays: [0, 1000, 3000, 5000, 10000, 15000, 20000, 30000],
         uploadSize: selectedFile.size,
+        storeFingerprintForResuming: true,
+        removeFingerprintOnSuccess: true,
         onError: (err) => {
           uploadRef.current = null;
           console.error("Upload failed:", err);
-          toast.error("Upload nije uspio. Pokušajte ponovo.");
+          toast.error("Upload nije uspio. Pritisnite dugme ponovo.");
           setUploading(false);
         },
         onProgress: (bytesUploaded, bytesTotal) => {
@@ -221,6 +223,21 @@ export default function UploadModal({ isOpen, onClose }) {
     onClose(false);
   };
 
+  const handleCancelUpload = () => {
+    if (!file?.type?.startsWith("video/")) return;
+
+    if (uploadRef.current) {
+      uploadRef.current.abort();
+      uploadRef.current = null;
+    }
+    clearSelection();
+
+    setUploading(false);
+    setProgress(0);
+
+    toast.success("Upload prekinut.");
+  };
+
   useEffect(() => {
     return () => {
       if (uploadRef.current) {
@@ -261,6 +278,7 @@ export default function UploadModal({ isOpen, onClose }) {
                 <input
                   type="file"
                   accept="image/*,video/*"
+                  capture="environment"
                   className={styles.fileInput}
                   onChange={handleFileChange}
                 />
@@ -292,6 +310,11 @@ export default function UploadModal({ isOpen, onClose }) {
                 disabled={uploading}
               >
                 {uploading ? `Uploading... ${progress}%` : "Dodaj u album"}
+              </button>
+            )}
+            {uploading && file?.type?.startsWith("video/") && (
+              <button className={styles.cancelBtn} onClick={handleCancelUpload}>
+                Prekini upload
               </button>
             )}
           </motion.div>
