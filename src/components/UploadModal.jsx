@@ -63,7 +63,6 @@ export default function UploadModal({ isOpen, onClose }) {
   const handleVideoUpload = async () => {
     if (!file) return;
 
-    const selectedFile = file;
     setUploading(true);
     setProgress(0);
 
@@ -72,9 +71,9 @@ export default function UploadModal({ isOpen, onClose }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          fileSize: selectedFile.size,
-          fileName: selectedFile.name,
-          fileType: selectedFile.type,
+          fileSize: file.size,
+          fileName: file.name,
+          fileType: file.type,
         }),
       });
 
@@ -85,12 +84,12 @@ export default function UploadModal({ isOpen, onClose }) {
         throw new Error("Invalid upload URL response");
       }
 
-      const upload = new tus.Upload(selectedFile, {
+      const upload = new tus.Upload(file, {
         // Use uploadUrl because backend already created the tus resource.
         uploadUrl: uploadURL,
         chunkSize: 50 * 1024 * 1024, // 50MB: fewer PATCH requests on mobile Chrome,
         retryDelays: [0, 1000, 3000, 5000, 10000, 15000, 20000, 30000],
-        uploadSize: selectedFile.size,
+        uploadSize: file.size,
         storeFingerprintForResuming: true,
         removeFingerprintOnSuccess: true,
         onError: (err) => {
@@ -110,8 +109,8 @@ export default function UploadModal({ isOpen, onClose }) {
             await saveToDb({
               id: uid,
               contentType: "video",
-              fileName: selectedFile.name,
-              mimeType: selectedFile.type,
+              fileName: file.name,
+              mimeType: file.type,
             });
             toast.success("Video je uspješno poslan.🎉");
             setUploading(false);
@@ -233,14 +232,15 @@ export default function UploadModal({ isOpen, onClose }) {
     if (!file?.type?.startsWith("video/")) return;
 
     if (uploadRef.current) {
+      //Abort tus client upload
       uploadRef.current.abort();
       uploadRef.current = null;
     }
 
-    setUploading(false);
-    setProgress(0);
-    clearSelection();
-    onClose(false);
+    setUploading(false); //set upload flag to false
+    setProgress(0); //reset progres
+    clearSelection(); //clear file and previewuRL
+    onClose(false); //close upload modal
 
     toast.success("Upload prekinut.");
   };
