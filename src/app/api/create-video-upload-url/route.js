@@ -19,7 +19,7 @@ export async function POST(req) {
   try {
     //1. DEFINE CONSTRAINTS
     const maxDurationSeconds = "600"; //maxx allowed duration of video is 10 min
-    const expiryDate = new Date(Date.now() + 60 * 60 * 1000); //1 hour
+    const expiryDate = new Date(Date.now() + 8 * 60 * 60 * 1000);
     const expiryISO = expiryDate.toISOString(); // RFC3339
 
     //2.BUILD UPLOAD-METADATA HEADER VALUE

@@ -1,9 +1,9 @@
 "use client";
 
 import styles from "./uploadModal.module.css";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import * as tus from "tus-js-client"; // ✅ import tus
+import * as tus from "tus-js-client";
 import { toast } from "react-hot-toast";
 import { FaCirclePlus } from "react-icons/fa6";
 
@@ -15,87 +15,86 @@ export default function UploadModal({ isOpen, onClose }) {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const uploadRef = useRef(null);
+
+  //CLEAR SELECTED FILE AND PREVIEURL
+  const clearSelection = () => {
+    setFile(null);
+    setPreviewUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+  };
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0] || null;
+
+    setPreviewUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return selectedFile ? URL.createObjectURL(selectedFile) : null;
+    });
     setFile(selectedFile);
-
-    if (selectedFile) {
-      const url = URL.createObjectURL(selectedFile);
-      setPreviewUrl(url);
-    } else {
-      setPreviewUrl(null);
-    }
   };
 
-  //SEND REQUEST TO MY BACKEND TO SAVE URL INSIDE MONGODB
-  const saveToDb = async (id, type) => {
-    try {
-      const res = await fetch("/api/save-media", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          mediaId: id,
-          name: file.name,
-          type: file.type,
-          contentType: type,
-        }),
-      });
-      if (!res.ok) {
-        console.error("❌ Failed to save to DB:", await res.json());
+  // SEND REQUEST TO BACKEND TO SAVE METADATA IN DB
+  const saveToDb = async ({ id, contentType, fileName, mimeType }) => {
+    const res = await fetch("/api/save-media", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        mediaId: id,
+        name: fileName,
+        type: mimeType,
+        contentType,
+      }),
+    });
+
+    if (!res.ok) {
+      let details = "";
+      try {
+        details = JSON.stringify(await res.json());
+      } catch {
+        details = await res.text();
       }
-    } catch (dbErr) {
-      console.error("⚠️ Failed to save to DB:", dbErr);
+      throw new Error(`Failed to save media metadata. ${details}`);
     }
   };
 
-  //1. ASK NEXT.JS BACKEND FOR UPLOAD URL
-  //2. BACKEND ASK CLOUDFLARE FOR URL
-  //3. BACKEND SEND UPLOAD URL AND ID TO FRONTEND
-  //4. FRONTEND MAKE DIRECT UPLOAD OF VIDEO VIA TUS
-  //TO CLOUDFLARE, WITHOUT BACKEND USING THAT URL.
-  //5. FORM CONTEN OBJECT WITH THAT ID
-  // AND SEND TO NEXT.JS BACKEND TO SAVE THE OBJECT TO MONGODB
   const handleVideoUpload = async () => {
     if (!file) return;
+
+    const selectedFile = file;
     setUploading(true);
     setProgress(0);
 
     try {
-      // 1. Ask backend for upload URL for direct video upload to cloudflare
       const res = await fetch("/api/create-video-upload-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          fileSize: file.size,
-          fileName: file.name,
-          fileType: file.type,
+          fileSize: selectedFile.size,
+          fileName: selectedFile.name,
+          fileType: selectedFile.type,
         }),
       });
 
       if (!res.ok) throw new Error("Cannot get upload URL");
 
       const { uploadURL, uid } = await res.json();
-
-      if (!uploadURL) {
-        throw new Error("No upload URL received from backend");
+      if (!uploadURL || !uid) {
+        throw new Error("Invalid upload URL response");
       }
 
-      // 2. Create TUS upload this will do direct upload from
-      //frontend to cloudflaren
-      const upload = new tus.Upload(file, {
-        // Cloudflare already returns a concrete upload URL.
-        // Use uploadUrl (not endpoint) so tus-js-client skips creation POST.
+      const upload = new tus.Upload(selectedFile, {
+        // Use uploadUrl because backend already created the tus resource.
         uploadUrl: uploadURL,
-        // Cloudflare Stream tus requires chunked PATCH uploads.
-        // Keeping chunks moderate avoids large single-request failures.
         chunkSize: 5 * 1024 * 1024,
         retryDelays: [0, 1000, 3000, 5000, 10000],
-        uploadSize: file.size,
-
+        uploadSize: selectedFile.size,
         onError: (err) => {
+          uploadRef.current = null;
           console.error("Upload failed:", err);
-          toast.error("Upload nije uspio. Pokušaj ponovo.");
+          toast.error("Upload nije uspio. Pokusaj ponovo.");
           setUploading(false);
         },
         onProgress: (bytesUploaded, bytesTotal) => {
@@ -103,46 +102,56 @@ export default function UploadModal({ isOpen, onClose }) {
           setProgress(percentage);
         },
         onSuccess: async () => {
-          // 3. Save UID to DB
-          await saveToDb(uid, "video");
-          console.log("✅ Upload finished! UID:", uid);
-          toast.success("Video je uspješno poslan.🎉");
-          setUploading(false);
-          onClose(true);
+          uploadRef.current = null;
+
+          try {
+            await saveToDb({
+              id: uid,
+              contentType: "video",
+              fileName: selectedFile.name,
+              mimeType: selectedFile.type,
+            });
+            toast.success("Video je uspjesno poslan.");
+            setUploading(false);
+            clearSelection();
+            onClose(true);
+          } catch (dbErr) {
+            console.error("Failed to save to DB:", dbErr);
+            toast.error(
+              "Video je uploadan, ali spremanje u bazu nije uspjelo.",
+            );
+            setUploading(false);
+          }
         },
       });
 
-      // 3. Start upload
+      uploadRef.current = upload;
       upload.start();
     } catch (err) {
       console.error("Upload error:", err);
-      toast.error("Greška: " + err.message);
+      toast.error("Greska: " + err.message);
       setUploading(false);
     }
   };
 
-  //1. FRONTEND ASK NEXT.JS BACKEND FOR UPLOAD URL
-  //2. NEXT.JS BACKEND ASK CLOUDFLARE FOR URL
-  //3. NEXT.JS BACKEND SEND UPLOAD URL TO FRONTEND
-  //4. FRONTEND MAKE DIRECT UPLOAD OF IMAGE
-  //   WITHOUT BACKEND.
-  //5. SAVE UID to DB VIA NEXT.JS BACKEND
   const handleImageUpload = async () => {
+    if (!file) return;
+
+    const selectedFile = file;
     setUploading(true);
+    let success = false;
+
     try {
-      // 1. Ask backend for direct upload URL
       const res = await fetch("/api/create-image-upload-url", {
         method: "POST",
       });
+      if (!res.ok) throw new Error("Cannot get image upload URL");
 
       const { uploadURL, id } = await res.json();
+      if (!uploadURL || !id) throw new Error("Invalid image upload response");
 
-      //console.log("uploadurl", uploadURL, "id", id);
-
-      // 2. Upload image file directly to Cloudflare Images
-      // without involving my backend
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", selectedFile);
 
       const uploadRes = await fetch(uploadURL, {
         method: "POST",
@@ -150,61 +159,81 @@ export default function UploadModal({ isOpen, onClose }) {
       });
 
       if (!uploadRes.ok) {
-        console.error("Image upload failed");
-        return;
+        throw new Error("Image upload failed");
       }
-      console.log("✅ Image uploaded, ID:", id);
 
-      // 3. Save UID to DB
-      await saveToDb(id, "image");
+      await saveToDb({
+        id,
+        contentType: "image",
+        fileName: selectedFile.name,
+        mimeType: selectedFile.type,
+      });
 
-      toast.success("Slika je uspješno poslana.🎉");
+      toast.success("Slika je uspjesno poslana.");
+      success = true;
     } catch (err) {
       console.error("Upload error:", err);
-      toast.error("Greška pri uploadu slike: " + err.message);
+      toast.error("Greska pri uploadu slike: " + err.message);
     } finally {
       setUploading(false);
-
-      onClose(true);
+      if (success) clearSelection();
+      onClose(success);
     }
   };
 
   const handleUpload = () => {
     if (uploading) return;
+
     if (!file) {
       onClose(false);
       return;
     }
+
     if (file.type.startsWith("video/")) {
       if (file.size > MAX_VIDEO_SIZE) {
         toast.error("Video je prevelik (max 500MB)");
         return;
       }
-
       handleVideoUpload();
-    } else if (file.type.startsWith("image/")) {
+      return;
+    }
+
+    if (file.type.startsWith("image/")) {
       if (file.size > MAX_IMAGE_SIZE) {
         toast.error("Slika je prevelika (max 15MB)");
         return;
       }
       handleImageUpload();
-    } else {
-      alert("Unsupported file type");
+      return;
     }
+
+    toast.error("Unsupported file type");
+  };
+
+  const handleModalDismiss = () => {
+    if (uploading) {
+      toast("Upload is still running in background.");
+      //close modal but not clear file and previewUrl
+      onClose(false);
+      return;
+    }
+
+    clearSelection();
+    onClose(false);
   };
 
   useEffect(() => {
-    if (!isOpen) {
-      setFile(null); // clear when modal closes
-    }
-  }, [isOpen]);
+    return () => {
+      if (uploadRef.current) {
+        uploadRef.current.abort();
+        uploadRef.current = null;
+      }
+    };
+  }, []);
 
-  //To avoid memory leaks, revoke the object URL when the file changes or modal closes
   useEffect(() => {
     return () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
     };
   }, [previewUrl]);
 
@@ -216,10 +245,7 @@ export default function UploadModal({ isOpen, onClose }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          onClick={() => {
-            setFile(null);
-            onClose(false);
-          }}
+          onClick={handleModalDismiss}
         >
           <motion.div
             className={styles.modal}
@@ -249,17 +275,18 @@ export default function UploadModal({ isOpen, onClose }) {
                       src={previewUrl}
                       alt="Preview"
                       className={styles.previewImage}
-                    ></img>
+                    />
                   ) : (
                     <video
                       src={previewUrl}
                       controls
                       className={styles.previewImage}
-                    ></video>
+                    />
                   )}
                 </div>
               )}
             </div>
+
             {file && (
               <button
                 className={styles.uploadBtn}
