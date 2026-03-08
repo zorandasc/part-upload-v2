@@ -88,13 +88,13 @@ export default function UploadModal({ isOpen, onClose }) {
       const upload = new tus.Upload(selectedFile, {
         // Use uploadUrl because backend already created the tus resource.
         uploadUrl: uploadURL,
-        chunkSize: 5 * 1024 * 1024,
-        retryDelays: [0, 1000, 3000, 5000, 10000],
+        chunkSize: 50 * 1024 * 1024, // 50MB: fewer PATCH requests on mobile Chrome,
+        retryDelays: [0, 1000, 3000, 5000, 10000, 15000, 20000, 30000],
         uploadSize: selectedFile.size,
         onError: (err) => {
           uploadRef.current = null;
           console.error("Upload failed:", err);
-          toast.error("Upload nije uspio. Pokusaj ponovo.");
+          toast.error("Upload nije uspio. Pokušajte ponovo.");
           setUploading(false);
         },
         onProgress: (bytesUploaded, bytesTotal) => {
@@ -111,14 +111,14 @@ export default function UploadModal({ isOpen, onClose }) {
               fileName: selectedFile.name,
               mimeType: selectedFile.type,
             });
-            toast.success("Video je uspjesno poslan.");
+            toast.success("Video je uspješno poslan.🎉");
             setUploading(false);
             clearSelection();
             onClose(true);
           } catch (dbErr) {
             console.error("Failed to save to DB:", dbErr);
             toast.error(
-              "Video je uploadan, ali spremanje u bazu nije uspjelo.",
+              "Video je upload-ovan, ali spremanje u bazu nije uspjelo.",
             );
             setUploading(false);
           }
@@ -128,7 +128,6 @@ export default function UploadModal({ isOpen, onClose }) {
       uploadRef.current = upload;
       upload.start();
     } catch (err) {
-      console.error("Upload error:", err);
       toast.error("Greska: " + err.message);
       setUploading(false);
     }
@@ -169,7 +168,7 @@ export default function UploadModal({ isOpen, onClose }) {
         mimeType: selectedFile.type,
       });
 
-      toast.success("Slika je uspjesno poslana.");
+      toast.success("Slika je uspješno poslana.🎉");
       success = true;
     } catch (err) {
       console.error("Upload error:", err);
@@ -213,7 +212,7 @@ export default function UploadModal({ isOpen, onClose }) {
   const handleModalDismiss = () => {
     if (uploading) {
       toast("Upload is still running in background.");
-      //close modal but not clear file and previewUrl
+      // Close modal without clearing upload state.
       onClose(false);
       return;
     }
@@ -262,7 +261,6 @@ export default function UploadModal({ isOpen, onClose }) {
                 <input
                   type="file"
                   accept="image/*,video/*"
-                  capture
                   className={styles.fileInput}
                   onChange={handleFileChange}
                 />
