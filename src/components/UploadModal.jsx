@@ -195,6 +195,11 @@ export default function UploadModal({ isOpen, onClose }) {
         toast.error("Video je prevelik (max 500MB)");
         return;
       }
+      if (shouldWarnSlowNetworkForLargeVideo(file)) {
+        toast(
+          "⚠️ Detektovana sporija mreža. Veći video može trajati duže pri upload-u.",
+        );
+      }
       handleVideoUpload();
       return;
     }
@@ -238,6 +243,21 @@ export default function UploadModal({ isOpen, onClose }) {
     onClose(false);
 
     toast.success("Upload prekinut.");
+  };
+
+  //Detetct type of slow connection
+  const shouldWarnSlowNetworkForLargeVideo = (file) => {
+    if (!file?.type?.startsWith("video/")) return false;
+    const isLarge = file.size > 100 * 1024 * 1024; // 100MB threshold
+    const conn =
+      navigator.connection ||
+      navigator.mozConnection ||
+      navigator.webkitConnection;
+    if (!conn) return false;
+
+    const slow = ["slow-2g", "2g", "3g"].includes(conn.effectiveType);
+    //If video file larger than 100MB and user on slow connection return true
+    return isLarge && (slow || conn.saveData);
   };
 
   useEffect(() => {
