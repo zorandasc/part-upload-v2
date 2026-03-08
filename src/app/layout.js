@@ -43,7 +43,11 @@ export default function RootLayout({ children }) {
                 style: {
                   background: "rgb(230 228 221 / 70%)",
                   backdropFilter: "blur(15px)",
-                  color: "222",
+                  fontFamily: "Raleway, serif",
+                  color: "#3b3934",
+                  fontSize: "18px",
+                  fontWeight: "500",
+                  lineHeight: "1.2",
                 },
               }}
             ></Toaster>
