@@ -224,16 +224,18 @@ export default function UploadModal({ isOpen, onClose }) {
   };
 
   const handleCancelUpload = () => {
+    //Cancel upload only for video
     if (!file?.type?.startsWith("video/")) return;
 
     if (uploadRef.current) {
       uploadRef.current.abort();
       uploadRef.current = null;
     }
-    clearSelection();
 
     setUploading(false);
     setProgress(0);
+    clearSelection();
+    onClose(false);
 
     toast.success("Upload prekinut.");
   };
