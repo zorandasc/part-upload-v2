@@ -15,28 +15,53 @@ export function UploadProvider({ children }) {
   const [isModalOpen, setModalOpen] = useState(false);
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const previewUrlRef = useRef(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [lastUploadAt, setLastUploadAt] = useState(null);
   const uploadRef = useRef(null);
 
-  //CLEAR SELECTED FILE AND PREVIEURL
-  const clearSelection = () => {
-    setFile(null);
-    setPreviewUrl((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
-      return null;
-    });
+  //CHECK IF WE ARE ON CROME MOBILE
+  const isAndroidChrome = () => {
+    if (typeof navigator === "undefined") return false;
+    const ua = navigator.userAgent || "";
+    const isAndroid = /Android/i.test(ua);
+    const isChrome = /Chrome\//i.test(ua);
+    const isEdge = /EdgA\//i.test(ua);
+    const isSamsung = /SamsungBrowser\//i.test(ua);
+    return isAndroid && isChrome && !isEdge && !isSamsung;
   };
 
   //SET SELECTED FILE AND PREVIEURL
   const setSelectedFile = (selectedFile) => {
-    setPreviewUrl((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
-      return selectedFile ? URL.createObjectURL(selectedFile) : null;
-    });
+    // revoke old preview first
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current);
+      previewUrlRef.current = null;
+    }
     setFile(selectedFile || null);
+
+    if (!selectedFile) {
+      setPreviewUrl(null);
+      return;
+    }
+
+    if (
+      selectedFile &&
+      selectedFile.type.startsWith("video/") &&
+      isAndroidChrome()
+    ) {
+      // No blob preview for video on mobile crome browser
+      setPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(selectedFile);
+    previewUrlRef.current = url;
+    setPreviewUrl(url);
   };
+
+  //CLEAR SELECTED FILE AND PREVIEURL
+  const clearSelection = () => setSelectedFile(null);
 
   const openModal = () => setModalOpen(true);
 
@@ -102,8 +127,8 @@ export function UploadProvider({ children }) {
         await saveToDb({
           id: uid,
           contentType: "video",
-          fileName: file.name,
-          mimeType: file.type,
+          fileName: selectedFile.name,
+          mimeType: selectedFile.type,
         });
 
         setUploading(false);
@@ -222,16 +247,16 @@ export function UploadProvider({ children }) {
     setUploading(false); //set upload flag to false
     setProgress(0); //reset progres
     clearSelection(); //clear file and previewuRL
-    closeModal(false); //close upload modal
+    closeModal(); //close upload modal
 
     toast.success("Upload prekinut.");
   };
 
   useEffect(() => {
     return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
     };
-  }, [previewUrl]);
+  }, []);
 
   const value = {
     isModalOpen,

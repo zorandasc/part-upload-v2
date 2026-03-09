@@ -3,6 +3,8 @@
 import styles from "./uploadModal.module.css";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaCirclePlus } from "react-icons/fa6";
+import { RiVideoOnAiFill } from "react-icons/ri";
+import { TbPlayerPlayFilled } from "react-icons/tb";
 import { useUpload } from "@/context/UploadProvider";
 
 export default function UploadModal() {
@@ -54,21 +56,33 @@ export default function UploadModal() {
                 />
               </label>
 
-              {previewUrl && file && (
+              {file && (
                 <div className={styles.previewWrapper}>
-                  {file.type.startsWith("image/") ? (
+                  {file?.type?.startsWith("image/") && previewUrl && (
                     <img
                       src={previewUrl}
                       alt="Preview"
                       className={styles.previewImage}
                     />
-                  ) : (
+                  )}
+
+                  {file?.type?.startsWith("video/") && previewUrl ? (
                     <video
+                      key={previewUrl}
                       src={previewUrl}
                       controls
+                      playsInline
+                      preload="metadata"
                       className={styles.previewImage}
                     />
-                  )}
+                  ) : file?.type?.startsWith("video/") ? (
+                    <div className={styles.nopreviewWrapper}>
+                      <TbPlayerPlayFilled />
+
+                      <p>{file.name}</p>
+                      <p>{(file.size / (1024 * 1024)).toFixed(1)} MB</p>
+                    </div>
+                  ) : null}
                 </div>
               )}
             </div>
