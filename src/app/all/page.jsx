@@ -13,7 +13,7 @@ import {
 } from "@/lib/helper";
 import MediaModal from "@/components/MediaModal";
 import UploadButton from "@/components/UploadButton";
-import UploadModal from "@/components/UploadModal";
+import { useUpload } from "@/context/UploadProvider";
 import Spinner from "@/components/Spinner";
 
 export default function All() {
@@ -23,8 +23,9 @@ export default function All() {
   const [page, setPage] = useState(1);
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [hasMore, setHasMore] = useState(true);
-  const [isModalOpen, setModalOpen] = useState(false);
   const [brokenVideoThumbs, setBrokenVideoThumbs] = useState({});
+  const lastHandledUploadRef = useRef(null); //FOR REFRESH AFTER UPLOAD
+  const { openModal, lastUploadAt, uploading, progress } = useUpload();
 
   //observer.current It acts as a container. By storing the new IntersectionObserver
   // inside observer.current, you ensure that you can disconnect the old observer
@@ -113,35 +114,6 @@ export default function All() {
     }
   }, [page]);
 
-  //gather all id of mediainfo that are video and not readytostream
-  //useMemo() On the initial render, React runs the calculation
-  //On subsequent renders, React compares the dependencies
-  //If dependencies haven’t changed, it returns the cached value.
-  //id changed it re-runs the calculation and updates the cache.
-  const pendingVideoIds = useMemo(
-    () =>
-      allMedia
-        .filter((m) => m.contentType === "video" && !m.readyToStream)
-        .map((m) => m._id),
-    [allMedia],
-  );
-
-  // Handler called when UploadModal is closed after upload
-  const handleUploadModalClose = async (didUpload = false) => {
-    setModalOpen(false);
-    if (didUpload) {
-      //OBRISI STARO STANJE
-      setAllMedia([]);
-      if (page === 1) {
-        //AKO SMO VEC NA PAGE 1, ONDA SAMO REFECTH ALL
-        await fetchAllMedia(); // re-fetch explicitly
-      } else {
-        //AKO NISMO VRATI SE NA POCETAK I PKAZI NOVI UNOS NA VRHU
-        setPage(1); // recreate fetchAllMedia and triggers useEffect normally, implicit refetch
-      }
-    }
-  };
-
   //WHEN SCROLING TO THE END OF PAGE IN MODAL VIEW.
   //WE NEED TO GET MORE ITEMS
   //THIS FUNCTION RETUERN PROMISE SO CALLER (MEDIAMODAL) can awaited
@@ -172,6 +144,19 @@ export default function All() {
     setAllMedia((prev) => prev.filter((item) => item._id !== deletedMedia._id));
     setTotalCount((prev) => Math.max(0, prev - 1));
   };
+
+  //ALL Video not readytostream
+  //useMemo() On the initial render, React runs the calculation
+  //On subsequent renders, React compares the dependencies
+  //If dependencies haven’t changed, it returns the cached value.
+  //id changed it re-runs the calculation and updates the cache.
+  const pendingVideoIds = useMemo(
+    () =>
+      allMedia
+        .filter((m) => m.contentType === "video" && !m.readyToStream)
+        .map((m) => m._id),
+    [allMedia],
+  );
 
   //POLL the api/get-media-state for every id in pendingVideoIds
   useEffect(() => {
@@ -225,12 +210,6 @@ export default function All() {
     //So it’s a dependency-stabilization trick.
   }, [pendingVideoIds.join("|")]);
 
-  useEffect(() => {
-    return () => {
-      if (observer.current) observer.current.disconnect();
-    };
-  }, []);
-
   //In this specific pattern, the useEffect acts as the engine starter.
   //To Trigger the Initial Load
   //The useEffect runs immediately on mount, calling fetchAllMedia()
@@ -240,9 +219,40 @@ export default function All() {
     fetchAllMedia();
   }, [fetchAllMedia]);
 
+  //FOR REFRESH OF GALLERY AFTER UPLOAD OF CONTENT
+  useEffect(() => {
+    // no successful upload yet
+    if (!lastUploadAt) return;
+
+    // avoid duplicate handling
+    if (lastHandledUploadRef.current === lastUploadAt) return;
+    lastHandledUploadRef.current = lastUploadAt;
+
+    const refreshAfterUpload = async () => {
+      setAllMedia([]); //OBRISI STARO STANJE
+
+      if (page === 1) {
+        //AKO SMO VEC NA PAGE 1, ONDA SAMO REFECTH ALL
+        await fetchAllMedia(); //explicit refetch
+      } else {
+        //AKO NISMO VRATI SE NA POCETAK I PKAZI NOVI UNOS NA VRHU
+        //setPage will recreate fetchAllMedia and triggers useEffect normally,
+        setPage(1); //implicit refetch
+      }
+    };
+
+    refreshAfterUpload();
+  }, [lastUploadAt, page, fetchAllMedia]);
+
   useEffect(() => {
     if (page === 1) window.scrollTo({ top: 0, behavior: "smooth" });
   }, [allMedia, page]);
+
+  useEffect(() => {
+    return () => {
+      if (observer.current) observer.current.disconnect();
+    };
+  }, []);
 
   return (
     <>
@@ -346,13 +356,10 @@ export default function All() {
       ></MediaModal>
 
       <UploadButton
-        handleClick={() => setModalOpen(true)}
+        handleClick={openModal}
         totalCount={totalCount}
-      />
-
-      <UploadModal
-        isOpen={isModalOpen}
-        onClose={handleUploadModalClose} // Auto-refresh gallery
+        uploading={uploading}
+        progress={progress}
       />
     </>
   );

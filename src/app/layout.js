@@ -5,6 +5,8 @@ import { Toaster } from "react-hot-toast";
 import Navbar from "@/components/Navbar";
 import { UserProvider } from "@/context/UserContext";
 import { LikedProvider } from "@/context/LikedContext";
+import { UploadProvider } from "@/context/UploadProvider";
+import UploadModal from "@/components/UploadModal";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,22 +37,25 @@ export default function RootLayout({ children }) {
       >
         <UserProvider>
           <LikedProvider>
-            <Navbar></Navbar>
-            {children}
-            <Toaster
-              position="top-center"
-              toastOptions={{
-                style: {
-                  background: "rgb(230 228 221 / 70%)",
-                  backdropFilter: "blur(15px)",
-                  fontFamily: "Raleway, serif",
-                  color: "#3b3934",
-                  fontSize: "18px",
-                  fontWeight: "500",
-                  lineHeight: "1.2",
-                },
-              }}
-            ></Toaster>
+            <UploadProvider>
+              <Navbar></Navbar>
+              {children}
+              <Toaster
+                position="top-center"
+                toastOptions={{
+                  style: {
+                    background: "rgb(230 228 221 / 70%)",
+                    backdropFilter: "blur(15px)",
+                    fontFamily: "Raleway, serif",
+                    color: "#3b3934",
+                    fontSize: "18px",
+                    fontWeight: "500",
+                    lineHeight: "1.2",
+                  },
+                }}
+              ></Toaster>
+              <UploadModal></UploadModal>
+            </UploadProvider>
           </LikedProvider>
         </UserProvider>
       </body>

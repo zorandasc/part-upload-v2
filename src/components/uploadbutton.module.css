@@ -5,7 +5,6 @@
   left: 50%;
   transform: translateX(-50%);
   z-index: 200;
-  
 }
 
 .menu1 {
@@ -22,8 +21,20 @@
   display: flex;
   justify-content: center;
 }
+.percent {
+  font-size: 16px;
+  background: #6f6959;
+  padding: 10px;
+  color: whitesmoke;
+  border-radius: 50%;
+  width: 70px;
+  height: 70px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
-.totalCount{
+.totalCount {
   position: absolute;
   top: -10px;
   left: 50px;
@@ -32,5 +43,5 @@
   background-color: goldenrod;
   padding: 5px;
   color: whitesmoke;
-  text-shadow: 1px 2px 2px #3328
+  text-shadow: 1px 2px 2px #3328;
 }

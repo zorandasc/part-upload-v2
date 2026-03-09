@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import UploadModal from "@/components/UploadModal";
+import { useUpload } from "@/context/UploadProvider";
 import styles from "./page.module.css";
 
 export default function Home() {
-  const [isModalOpen, setModalOpen] = useState(false);
+  const { openModal, uploading, progress } = useUpload();
+
   return (
     <div className={styles.imagesWrapperContainer}>
       <div className={styles.wrapperImages}>
@@ -282,18 +282,13 @@ export default function Home() {
             Moja sviđanja
           </Link>
 
-          <button
-            className={styles.navButton}
-            onClick={() => setModalOpen(true)}
-          >
-            + Dodaj fotografiju ili video
+          <button className={styles.navButton} onClick={() => openModal()}>
+            {uploading
+              ? `Uploading... ${progress}%`
+              : "+ Dodaj fotografiju ili video"}
           </button>
         </nav>
       </div>
-      <UploadModal
-        isOpen={isModalOpen}
-        onClose={() => setModalOpen(false)}
-      ></UploadModal>
     </div>
   );
 }
