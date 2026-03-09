@@ -89,6 +89,7 @@ export function UploadProvider({ children }) {
   };
 
   const handleVideoUpload = async (selectedFile) => {
+    //1. Get url and uid from api/backend for direct upload to cludflare
     const res = await fetch("/api/create-video-upload-url", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -103,6 +104,11 @@ export function UploadProvider({ children }) {
     const { uploadURL, uid } = await res.json();
     if (!uploadURL || !uid) throw new Error("Invalid upload URL response");
 
+    //2. Store for posible prune of uploadpending videos on cludflare
+    //if user cancel upload
+    videoUidRef.current = uid;
+
+    //3. Upoad video using tus client
     const upload = new tus.Upload(selectedFile, {
       // Use uploadUrl because backend already created the tus resource.
       uploadUrl: uploadURL,
@@ -245,9 +251,23 @@ export function UploadProvider({ children }) {
       // Abort in background so UI is not blocked by network stalls.
       const activeUpload = uploadRef.current;
       uploadRef.current = null;
-      //The true ensures the fingerprint is removed, preventing accidental resume attempts later.
+      //The true ensures the tus fingerprint is removed,
+      //preventing accidental resume attempts later.
       activeUpload.abort(true).catch((err) => {
         console.error("Abort failed:", err);
+      });
+    }
+
+    //prune uploadpending video from cloudflare when user canceled upload
+    if (videoUidRef.current) {
+      const uid = videoUidRef.current;
+      videoUidRef.current = null;
+      fetch("/api/delete-pending-video", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uid }),
+      }).catch((err) => {
+        console.error("Failed to delete pending upload:", err);
       });
     }
 
