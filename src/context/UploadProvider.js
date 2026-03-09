@@ -46,11 +46,7 @@ export function UploadProvider({ children }) {
       return;
     }
 
-    if (
-      selectedFile &&
-      selectedFile.type.startsWith("video/") &&
-      isAndroidChrome()
-    ) {
+    if (selectedFile.type.startsWith("video/") && isAndroidChrome()) {
       // No blob preview for video on mobile crome browser
       setPreviewUrl(null);
       return;
@@ -195,7 +191,7 @@ export function UploadProvider({ children }) {
   };
 
   const startUpload = async () => {
-    if (!file || uploading) return;
+    if (!file || uploading || uploadRef.current) return;
 
     if (file.type.startsWith("video/")) {
       if (file.size > MAX_VIDEO_SIZE) {
