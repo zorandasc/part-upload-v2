@@ -49,7 +49,6 @@ export default function UploadModal() {
                 <input
                   type="file"
                   accept="image/*,video/*"
-                  capture="environment"
                   className={styles.fileInput}
                   onChange={handleFileChange}
                 />
@@ -77,7 +76,6 @@ export default function UploadModal() {
                   ) : file?.type?.startsWith("video/") ? (
                     <div className={styles.nopreviewWrapper}>
                       <TbPlayerPlayFilled />
-
                       <p>{file.name}</p>
                       <p>{(file.size / (1024 * 1024)).toFixed(1)} MB</p>
                     </div>

@@ -102,9 +102,8 @@ export function UploadProvider({ children }) {
     const upload = new tus.Upload(selectedFile, {
       // Use uploadUrl because backend already created the tus resource.
       uploadUrl: uploadURL,
-      chunkSize: 50 * 1024 * 1024, // 50MB: fewer PATCH requests on mobile Chrome,
+      chunkSize: 20 * 1024 * 1024, // 50MB: fewer PATCH requests on mobile Chrome,
       retryDelays: [0, 1000, 3000, 5000, 10000, 15000, 20000, 30000],
-      requestTimeout: 30000,
       uploadSize: selectedFile.size,
       storeFingerprintForResuming: false,
       removeFingerprintOnSuccess: false,
