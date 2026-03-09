@@ -18,8 +18,12 @@ export function UploadProvider({ children }) {
   const previewUrlRef = useRef(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
+  //for updating logic in allgalery after upload
   const [lastUploadAt, setLastUploadAt] = useState(null);
+  //for refering to tus upload
   const uploadRef = useRef(null);
+  //for cleaning pendingupload on cludflare after cancel
+  const videoUidRef = useRef(null);
 
   //CHECK IF WE ARE ON CROME MOBILE
   const isAndroidChrome = () => {
@@ -105,8 +109,6 @@ export function UploadProvider({ children }) {
       chunkSize: 20 * 1024 * 1024, // 50MB: fewer PATCH requests on mobile Chrome,
       retryDelays: [0, 1000, 3000, 5000, 10000, 15000, 20000, 30000],
       uploadSize: selectedFile.size,
-      storeFingerprintForResuming: false,
-      removeFingerprintOnSuccess: false,
       onError: (err) => {
         uploadRef.current = null;
         setUploading(false);
@@ -119,6 +121,7 @@ export function UploadProvider({ children }) {
       },
       onSuccess: async () => {
         uploadRef.current = null;
+        videoUidRef.current = null;
 
         await saveToDb({
           id: uid,
@@ -130,7 +133,7 @@ export function UploadProvider({ children }) {
         setUploading(false);
         setProgress(100);
         clearSelection();
-        setLastUploadAt(Date.now());//to refresh allgalery
+        setLastUploadAt(Date.now()); //to refresh allgalery
         setModalOpen(false);
         toast.success("Video je uspješno poslan.🎉");
       },
@@ -170,7 +173,7 @@ export function UploadProvider({ children }) {
 
     setUploading(false);
     setProgress(100);
-    setLastUploadAt(Date.now());//to refresh allgalery
+    setLastUploadAt(Date.now()); //to refresh allgalery
     clearSelection();
     setModalOpen(false);
     toast.success("Slika je uspješno poslana.🎉");
@@ -235,7 +238,7 @@ export function UploadProvider({ children }) {
 
     setUploading(false); //set upload flag to false
     setProgress(0); //reset progres
-    clearSelection(); //clear file and previewuRL
+    clearSelection(); //clear file
     closeModal(); //close upload modal
 
     if (uploadRef.current) {

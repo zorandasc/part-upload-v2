@@ -55,7 +55,7 @@ export const enableCloudflareVideoDownload = async (mediaId) => {
   );
 };
 
-//API POINT CALLED BY MEDIAMODAL, TO CHECK IF VIDEO IS READY TO STREAM
+//API POINT CALLED BY ALLGALERY, TO CHECK IF VIDEO IS READY TO STREAM
 /**
  * Check if video is ready to stream — called from frontend polling.
  * THE VIDEO IS READY TO STREM IF:

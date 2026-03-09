@@ -2,6 +2,7 @@ import clientPromise from "@/lib/mongodb";
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 
+//ROUTE FOR ADMIN USER TO DELTETE ONE CONTENT
 export async function POST(req) {
   try {
     const data = await req.json();

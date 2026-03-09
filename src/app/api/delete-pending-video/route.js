@@ -1,3 +1,5 @@
+//ROUTE FOR ONLY DELETING CLOUDFLARE PENDINGUPLOAD VIDEOS (NO MONGO)
+//WHICH ARE FROMED AFTER USER CANCEL OF VIDEO UPLOAD
 export async function POST(req) {
   try {
     const { uid } = await req.json();
@@ -16,7 +18,7 @@ export async function POST(req) {
         headers: {
           Authorization: `Bearer ${CF_STREAM_TOKEN}`,
         },
-      }
+      },
     );
 
     const data = await res.json();
@@ -28,7 +30,10 @@ export async function POST(req) {
 
     // Only delete unfinished uploads
     if (video.status?.state !== "pendingupload") {
-      return Response.json({ error: "Cannot delete completed video" }, { status: 403 });
+      return Response.json(
+        { error: "Cannot delete completed video" },
+        { status: 403 },
+      );
     }
 
     // Delete video
@@ -39,11 +44,10 @@ export async function POST(req) {
         headers: {
           Authorization: `Bearer ${CF_STREAM_TOKEN}`,
         },
-      }
+      },
     );
 
     return Response.json({ success: true });
-
   } catch (err) {
     console.error(err);
     return Response.json({ error: "Server error" }, { status: 500 });
