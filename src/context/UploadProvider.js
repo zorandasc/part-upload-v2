@@ -191,12 +191,7 @@ export function UploadProvider({ children }) {
 
     const slow = ["slow-2g", "2g", "3g"].includes(conn.effectiveType);
     //If video file larger than 100MB and user on slow connection return true
-    if (isLarge && (slow || conn.saveData)) {
-      toast(
-        "⚠️ Detektovana sporija mreža. Veći video može trajati duže pri upload-u.",
-      );
-      return;
-    }
+    return isLarge && (slow || conn.saveData);
   };
 
   const startUpload = async () => {
@@ -222,7 +217,11 @@ export function UploadProvider({ children }) {
 
     try {
       if (file.type.startsWith("video/")) {
-        shouldWarnSlowNetworkForLargeVideo(file);
+        if (shouldWarnSlowNetworkForLargeVideo(file)) {
+          toast(
+            "⚠️ Detektovana sporija mreža. Veći video može trajati duže pri upload-u.",
+          );
+        }
         await handleVideoUpload(file);
       } else {
         await handleImageUpload(file);

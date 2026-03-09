@@ -3,7 +3,6 @@
 import styles from "./uploadModal.module.css";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaCirclePlus } from "react-icons/fa6";
-import { RiVideoOnAiFill } from "react-icons/ri";
 import { TbPlayerPlayFilled } from "react-icons/tb";
 import { useUpload } from "@/context/UploadProvider";
 
