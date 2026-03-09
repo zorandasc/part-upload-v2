@@ -46,8 +46,8 @@ export function UploadProvider({ children }) {
       return;
     }
 
+    // No blob preview for video on mobile crome browser
     if (selectedFile.type.startsWith("video/") && isAndroidChrome()) {
-      // No blob preview for video on mobile crome browser
       setPreviewUrl(null);
       return;
     }
@@ -104,9 +104,10 @@ export function UploadProvider({ children }) {
       uploadUrl: uploadURL,
       chunkSize: 50 * 1024 * 1024, // 50MB: fewer PATCH requests on mobile Chrome,
       retryDelays: [0, 1000, 3000, 5000, 10000, 15000, 20000, 30000],
+      requestTimeout: 30000,
       uploadSize: selectedFile.size,
-      storeFingerprintForResuming: true,
-      removeFingerprintOnSuccess: true,
+      storeFingerprintForResuming: false,
+      removeFingerprintOnSuccess: false,
       onError: (err) => {
         uploadRef.current = null;
         setUploading(false);
@@ -130,7 +131,7 @@ export function UploadProvider({ children }) {
         setUploading(false);
         setProgress(100);
         clearSelection();
-        setLastUploadAt(Date.now());
+        setLastUploadAt(Date.now());//to refresh allgalery
         setModalOpen(false);
         toast.success("Video je uspješno poslan.🎉");
       },
@@ -170,7 +171,7 @@ export function UploadProvider({ children }) {
 
     setUploading(false);
     setProgress(100);
-    setLastUploadAt(Date.now());
+    setLastUploadAt(Date.now());//to refresh allgalery
     clearSelection();
     setModalOpen(false);
     toast.success("Slika je uspješno poslana.🎉");
@@ -233,16 +234,20 @@ export function UploadProvider({ children }) {
     //Cancel upload only for video
     if (!file?.type?.startsWith("video/")) return;
 
-    if (uploadRef.current) {
-      //Abort tus client upload
-      uploadRef.current.abort();
-      uploadRef.current = null;
-    }
-
     setUploading(false); //set upload flag to false
     setProgress(0); //reset progres
     clearSelection(); //clear file and previewuRL
     closeModal(); //close upload modal
+
+    if (uploadRef.current) {
+      // Abort in background so UI is not blocked by network stalls.
+      const activeUpload = uploadRef.current;
+      uploadRef.current = null;
+      //The true ensures the fingerprint is removed, preventing accidental resume attempts later.
+      activeUpload.abort(true).catch((err) => {
+        console.error("Abort failed:", err);
+      });
+    }
 
     toast.success("Upload prekinut.");
   };
